@@ -83,9 +83,11 @@ try:
             int_.get_entries()
             print('')
 
+            # checks if " ar in _cmd
             if '"' in _cmd[0]:
                 group_name = re.findall(r'"(.*?)"', _cmd[0])[0]
 
+                # if yes, print entry
                 if group_name in int_.db_groups:
                     print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
                     for entry in int_.db_entries:
@@ -99,7 +101,7 @@ try:
                     print(clr.Fore.LIGHT_RED + f'The group "{group_name}" does not exist!"' + clr.RESET)
                     continue
 
-
+            # prints entries that don't have spaces in name
             if cmd[1] not in int_.db_groups:
                 print(clr.Fore.LIGHT_RED + f'The group "{cmd[1]}" does not exist!"' + clr.RESET)
                 continue
