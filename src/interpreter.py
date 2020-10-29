@@ -22,6 +22,7 @@ class Interpreter:
             raise err.DatabaseNotFound
 
     def get_script(self):
+        """gets DB script line for line and stores it in self.db_script_lines"""
         self.check_db_file()
         self.script_lines.clear()
 
@@ -32,21 +33,24 @@ class Interpreter:
                 lines.append(line)
         lines = [line.replace('\n', '') for line in lines]
 
+        # checks if DB_NAME occurres more than one time, raises error if it does
         db_name_occurrencies = 0
         for line in lines:
             if 'DB_NAME' in line:
                 db_name_occurrencies += 1
+                self.db_name = re.findall(r'DB_NAME\["(.*?)"\]', lines[0])[0]
 
             if db_name_occurrencies > 1:
                 raise err.InterpretError
 
-        self.script_lines = lines
-        self.db_name = re.findall(r'DB_NAME\["(.*?)"\]', lines[0])[0]
-
         if self.db_name == '':
             self.db_name = 'N/A'
+            
+        # stores script
+        self.script_lines = lines
 
     def get_groups(self):
+        """gets DB group names from self.script_lines and saves them in self.db_groups"""
         self.check_db_file()
         self.db_groups.clear()
 
