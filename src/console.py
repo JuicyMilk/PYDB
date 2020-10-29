@@ -1,5 +1,6 @@
 import os
 from time import sleep
+import re
 
 from interpreter import Interpreter as Int
 import errors as err
@@ -12,6 +13,8 @@ quit/exit       quits the program
 help            shows this help
 
 lsg             lists all groups in database
+lsea            lists all entries in all groups
+lse group_name  lists all entries in the specified group
 ----------------------------------------------------
 """
 
@@ -44,13 +47,15 @@ try:
     
     while True:
         cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.RESET})>> ')
+        _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
+        cmd = cmd.split()
 
-        if cmd == 'exit' or cmd == 'quit':
+        if cmd[0] == 'exit' or cmd[0] == 'quit':
             print('\nQuitting...')
             exit(0)
-        elif cmd == 'help':
+        elif cmd[0] == 'help':
             print(help_text)
-        elif cmd == 'lsg':
+        elif cmd[0] == 'lsg':
             print('\n' + f'----- Groups in "{int_.db_name}" -----')
 
             if not int_.db_groups:
@@ -61,6 +66,53 @@ try:
                 print(group)
 
             print('-' * len(f'----- Groups in "{int_.db_name}" -----') + '\n')
+        elif cmd[0] == 'lsea':
+            int_.get_entries()
+
+            print('')
+            print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+            for entry in int_.db_entries:
+                print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
+            print('')
+        elif cmd[0] == 'lse':
+            if not len(cmd) >= 2 or cmd[1] == '':
+                print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.RESET)
+                continue
+
+            int_.get_groups()
+            int_.get_entries()
+            print('')
+
+            if '"' in _cmd[0]:
+                group_name = re.findall(r'"(.*?)"', _cmd[0])[0]
+
+                if group_name in int_.db_groups:
+                    print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+                    for entry in int_.db_entries:
+                        if entry['group'] == group_name:
+                            print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
+                            print('')
+                            break
+                    continue
+                else:
+                    print
+                    print(clr.Fore.LIGHT_RED + f'The group "{group_name}" does not exist!"' + clr.RESET)
+                    continue
+
+
+            if cmd[1] not in int_.db_groups:
+                print(clr.Fore.LIGHT_RED + f'The group "{cmd[1]}" does not exist!"' + clr.RESET)
+                continue
+            int_.get_entries()
+
+            print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+            for entry in int_.db_entries:
+                if entry['group'] == cmd[1]:
+                    print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
+            print('')
+        else:
+            print(f'{clr.Fore.RED}"{cmd[0]}" is an unknown command, type help to see a list of all available commands{clr.RESET}')
+
 except KeyboardInterrupt:
     print('\nQuitting...')
     # sleep(1.5) TODO add this again later

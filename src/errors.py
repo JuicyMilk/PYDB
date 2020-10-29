@@ -56,3 +56,7 @@ class GroupAlreadyExists(Error):
 class EntryAlreadyExists(Error):
     def __init__(self):
         super(EntryAlreadyExists, self).__init__("The entry you want to create does already exist!")
+
+class DoubleID(Error):
+    def __init__(self):
+        super(DoubleID, self).__init__('There are tow entries with the same ID!')

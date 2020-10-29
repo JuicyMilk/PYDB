@@ -1,6 +1,9 @@
+DB_NAME["testDB"]
 
-
-GROUP[name="Group 1"]
+GROUP[name="Group_1"]
+GROUP[name="Group_2"]
 GROUP[name="Group 2"]
 
-ENTRY[id="1", name="testEntry"]
+ENTRY[id="1", name="testEntry", group="Group_1", type="string", value="John"]
+ENTRY[id="1", name="testEntry", group="Group_2", type="string", value="John"]
+ENTRY[id="1", name="testEntry", group="Group 2", type="string", value="John"]
