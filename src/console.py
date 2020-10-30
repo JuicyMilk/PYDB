@@ -22,6 +22,9 @@ lse group_name  lists all entries in the specified group
 if sys.platform == 'win32':
     # os.system('cls')
     os.system('color F')
+elif sys.platform == 'linux':
+    import readline
+    # os.system('clear')
 
 print('-------------------------------------------')
 print('Welcome to PYDB')
@@ -58,14 +61,14 @@ try:
         elif cmd[0] == 'help':
             print(help_text)
         elif cmd[0] == 'lsg':
-            print('\n' + f'----- Groups in "{int_.db_name}" -----')
+            print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.RESET}" -----')
 
             if not int_.db_groups:
                 print('There are no groups in this database')
                 continue
 
             for group in int_.db_groups:
-                print(group)
+                print(clr.Fore.ORANGE + group + clr.RESET)
 
             print('-' * len(f'----- Groups in "{int_.db_name}" -----') + '\n')
         elif cmd[0] == 'lsea':
@@ -122,4 +125,7 @@ except KeyboardInterrupt:
     if sys.platform == 'win32':
         # os.system('cls') TODO add this again later
         os.system('color F')
+    elif sys.platform == 'linux':
+        # os.system('clear') TODO add this again later
+        pass
     # sleep(1.5) TODO add this again later
