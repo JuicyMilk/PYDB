@@ -54,14 +54,14 @@ try:
             use_standard_db_path = True
 
         if not standard_db_path.endswith('/'):
-            standard_db_path + '/'
+            standard_db_path += '/'             # adds a / if there is no at the end ot the standard_db_path
 except FileNotFoundError:
     print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.RESET)
     pass
 
 print('-------------------------------------------')
 print('Welcome to PYDB')
-print('alpha v1.0')
+print('dev v1.0')
 print('type "help" for a list of available commands')
 print('-------------------------------------------\n')
 
@@ -75,12 +75,12 @@ try:
             # searches db files and prints a list of them to choose from
             databases_counter = 0
             databases = []
-            for i in files_in_std_dir:
+            for i in files_in_std_dir:  # i is the file in files_in_std_dir
                 if os.path.isfile(standard_db_path + i):
                     if i.endswith('.pydb'):
                         databases_counter += 1
                         databases.append([databases_counter, standard_db_path + i])
-                        print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i.replace('.pydb', ''))
+                        print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i)
 
             if databases_counter == 0:
                 print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.RESET)
