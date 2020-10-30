@@ -1,6 +1,7 @@
 import os
 from time import sleep
 import re
+import sys
 
 from interpreter import Interpreter as Int
 import errors as err
@@ -18,8 +19,9 @@ lse group_name  lists all entries in the specified group
 ----------------------------------------------------
 """
 
-# os.system('cls')
-os.system('color F')
+if sys.platform == 'win32':
+    # os.system('cls')
+    os.system('color F')
 
 print('-------------------------------------------')
 print('Welcome to PYDB')
@@ -44,7 +46,7 @@ try:
     int_.get_script()
     int_.get_groups()
     print('Loaded\n')
-    
+
     while True:
         cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.RESET})>> ')
         _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
@@ -117,6 +119,7 @@ try:
 
 except KeyboardInterrupt:
     print('\nQuitting...')
+    if sys.platform == 'win32':
+        # os.system('cls') TODO add this again later
+        os.system('color F')
     # sleep(1.5) TODO add this again later
-    # os.system('cls') TODO add this again
-
