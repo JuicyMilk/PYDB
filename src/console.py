@@ -37,7 +37,15 @@ try:
         json_cfg = cfg_r.read()
     cfg = json.loads(json_cfg)
 
-    if 'standard_db_path' in cfg:
+    if 'standard_db_path' in cfg and not cfg['standard_db_path'].isspace() and cfg['standard_db_path'] != '':
+        # checks if standard_db_path exists and is a path
+        if not os.path.exists(cfg['standard_db_path']):
+            print(clr.Fore.LIGHT_RED + 'The provided path wasn\'t found!\nChange your "config.json" file' + clr.RESET)
+            exit(0)
+        if os.path.isfile(cfg['standard_db_path']):
+            print(clr.Fore.LIGHT_RED + 'The provided path can\'t be a file!\nChange your "config.json" file' + clr.RESET)
+            exit(0)
+
         standard_db_path = cfg['standard_db_path']
 
         if 'use_standard_db_path' in cfg:
