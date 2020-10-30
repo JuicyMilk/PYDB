@@ -11,7 +11,7 @@ class Interpreter:
         self.db_groups = []
         self.db_entries = []
         self.db_entry_names = []
-    
+
     def check_db_file(self):
         """checks if provided DB path is valid"""
         if os.path.exists(self.db):
@@ -38,7 +38,6 @@ class Interpreter:
         db_name_occurrences = 0
         for line in lines:
             if 'DB_NAME' in line:
-                print('name')
                 db_name_occurrences += 1
                 self.db_name = re.findall(r'DB_NAME\["(.*?)"\]', lines[0])[0]
 
@@ -47,7 +46,7 @@ class Interpreter:
 
         if self.db_name == '':
             self.db_name = 'N/A'
-            
+
         # stores script
         self.script_lines = lines
 
@@ -57,18 +56,18 @@ class Interpreter:
         self.db_groups.clear()
 
         groups = []
-        
+
         for line in self.script_lines:
             if re.findall(r'GROUP\[name="(.*?)"]', line):
                 groups.append(re.findall(r'GROUP\[name="(.*?)"]', line)[0])
-        
+
         for group in groups:
             self.db_groups.append(group)
-        
+
         for group in self.db_groups:
             if self.db_groups.count(group) > 1:
                 raise err.InterpretError
-    
+
     def get_entries(self):
         self.check_db_file()
         self.db_entries.clear()
@@ -95,7 +94,21 @@ class Interpreter:
         for id_group in entry_ids:
             if entry_ids.count(id_group) > 1:
                 raise err.DoubleID
-        
+
         for entry in entries:
             self.db_entries.append(entry)
 
+    def get_entries_in_group(self, group: str) -> list:
+        self.get_groups()
+        self.get_entries()
+
+        if group not in self.db_groups:
+            raise err.GroupNotFound
+
+        entries_in_group = []
+
+        for entry in self.db_entries:
+            if entry['group'] == group:
+                entries_in_group.append(entry)
+
+        return entries_in_group

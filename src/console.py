@@ -81,6 +81,7 @@ try:
                         databases_counter += 1
                         databases.append([databases_counter, standard_db_path + i])
                         print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i)
+            print('')
 
             if databases_counter == 0:
                 print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.RESET)
@@ -131,7 +132,11 @@ try:
 
     while True:
         cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.RESET})>> ')
-        _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
+        # _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
+        _cmd = re.split(r'"', cmd)
+        if '' in _cmd:
+            _cmd.remove('')
+        print(_cmd)
         cmd = cmd.split()
 
         if cmd[0] == 'exit' or cmd[0] == 'quit':
@@ -164,43 +169,20 @@ try:
             print('')
         elif cmd[0] == 'lse':
             """lists all entries in specified group"""
-            if not len(cmd) >= 2 or cmd[1] == '':
+            if len(cmd) < 2:
                 print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.RESET)
-                continue
 
-            int_.get_groups()
-            int_.get_entries()
-            print('')
+            try:
+                try:
+                    entries_in_group = int_.get_entries_in_group(_cmd[1])
+                except IndexError:
+                    entries_in_group = int_.get_entries_in_group(cmd[1])
 
-            # checks if " ar in _cmd
-            if '"' in _cmd[0]:
-                group_name = re.findall(r'"(.*?)"', _cmd[0])[0]
-
-                # if yes, print entry
-                if group_name in int_.db_groups:
-                    print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
-                    for entry in int_.db_entries:
-                        if entry['group'] == group_name:
-                            print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
-                            print('')
-                            break
-                    continue
-                else:
-                    print
-                    print(clr.Fore.LIGHT_RED + f'The group "{group_name}" does not exist!"' + clr.RESET)
-                    continue
-
-            # prints entries that don't have spaces in name
-            if cmd[1] not in int_.db_groups:
-                print(clr.Fore.LIGHT_RED + f'The group "{cmd[1]}" does not exist!"' + clr.RESET)
-                continue
-            int_.get_entries()
-
-            print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
-            for entry in int_.db_entries:
-                if entry['group'] == cmd[1]:
-                    print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
-            print('')
+                print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+                for entry in entries_in_group:
+                    print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.RESET)
+            except err.GroupNotFound as e:
+                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
         else:
             print(f'{clr.Fore.RED}"{cmd[0]}" is an unknown command, type help to see a list of all available commands{clr.RESET}')
 
