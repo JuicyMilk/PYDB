@@ -136,7 +136,6 @@ try:
         _cmd = re.split(r'"', cmd)
         if '' in _cmd:
             _cmd.remove('')
-        print(_cmd)
         cmd = cmd.split()
 
         if cmd[0] == 'exit' or cmd[0] == 'quit':
