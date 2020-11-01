@@ -37,11 +37,11 @@ lse group_name  lists all entries in the specified group
 
 # checks the OS
 if sys.platform == 'win32':
-    # os.system('cls')
+    os.system('cls')
     os.system('color F')
 elif sys.platform == 'linux':
     import readline
-    # os.system('clear')
+    os.system('clear')
 
 # basic settings
 standard_db_path = ''
@@ -83,13 +83,13 @@ def quit():
     """quits the application"""
     print('\nQuitting...')
     if sys.platform == 'win32':
-        # os.system('cls') TODO add this again later
+        os.system('cls')
         os.system('color F')
         exit(0)
     elif sys.platform == 'linux':
-        # os.system('clear') TODO add this again later
+        os.system('clear')
         exit(0)
-    # sleep(1.5) TODO add this again later
+    sleep(1.5)
 
 def start_menu():
     """start menu provides list of databases if 'use_standard_db_path = True' and allows to create and change a db"""
