@@ -14,19 +14,6 @@ class FileNotDB(Error):
     def __init__(self):
         super().__init__(f'The provided file or path isn\'t a ".pydb"-file!')
 
-
-class NoSecurityKey(Error):
-    """Raised if there is no Secure Key in the first line of the database"""
-    def __init__(self):
-        super().__init__('There is no Security Key(SK) in the first line of the database file!')
-
-
-class WrongPassword(Error):
-    """Raised if password is wrong"""
-    def __init__(self):
-        super().__init__('The provided password is wrong!')
-
-
 class InterpretError(Error):
     def __init__(self):
         super().__init__('InterpreterError')
@@ -60,3 +47,7 @@ class EntryAlreadyExists(Error):
 class DoubleID(Error):
     def __init__(self):
         super(DoubleID, self).__init__('There are tow entries with the same ID!')
+
+class DBNameEmpty(Error):
+    def __init__(self):
+        super(DoubleID, self).__init__('Database without DB_NAME cannot be created!')
