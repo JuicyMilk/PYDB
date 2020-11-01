@@ -3,7 +3,9 @@ from time import sleep
 import re
 import sys
 import json
+import shlex
 
+from manager import Manager as Mgr
 from interpreter import Interpreter as Int
 import errors as err
 import colors as clr
@@ -30,6 +32,9 @@ elif sys.platform == 'linux':
 # basic settings
 standard_db_path = ''
 use_standard_db_path = False
+
+# class object vars
+int_ = None
 
 # load config.json
 try:
@@ -59,17 +64,17 @@ except FileNotFoundError:
     print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.RESET)
     pass
 
-print('-------------------------------------------')
-print('Welcome to PYDB')
-print('dev v1.0')
-print('type "help" for a list of available commands')
-print('-------------------------------------------\n')
-
-try:
-    # if standard_db_file is set in config.json and use_standard_db_file = True,
-    # this will let the user choose a .pydb file from that directory
+def start_menu():
+    global int_
     while True:
-        if use_standard_db_path:
+        cmd = input(f'>> ')
+        try:
+            _cmd = shlex.split(cmd)
+        except ValueError:
+            print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.RESET)
+            continue
+
+        if len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:
             files_in_std_dir = os.listdir(standard_db_path)
 
             # searches db files and prints a list of them to choose from
@@ -111,19 +116,21 @@ try:
                             print(e)
                         except err.DatabaseNotFound as e:
                             print(e)
-                break
-            break   # if chosen right, database gets loaded
-        else:
-            db_path = input('Enter the DB file path: ')
-            int_ = Int(db_path)
 
-            try:
-                int_.check_db_file()
                 break
-            except err.FileNotDB as e:
-                print(e)
-            except err.DatabaseNotFound as e:
-                print(e)
+            break
+
+# welcome text
+print('-------------------------------------------')
+print('Welcome to PYDB')
+print('dev v1.0')
+print('type "help" for a list of available commands')
+print('-------------------------------------------\n')
+
+try:
+    start_menu()
+    # if standard_db_file is set in config.json and use_standard_db_file = True,
+    # this will let the user choose a .pydb file from that directory
 
     print('Loading the database...')
     int_.get_script()
