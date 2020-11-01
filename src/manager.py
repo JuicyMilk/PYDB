@@ -10,14 +10,20 @@ class Manager:
         self.int_ = Int(self.db)
 
     def create_db(self, db_name: str):
+        if not self.db.endswith('.pydb'):
+            raise err.FileNotDB
+
         if db_name == '' or db_name.isspace():
             raise err.DBNameEmpty
 
-        try:
-            with open(self.db, 'w+') as db_creator:
-                db_creator.write(f'DB_NAME["{db_name}"]')
-        except FileExistsError:
+        if os.path.exists(self.db):
             raise err.DatabaseAlreadyExists
+
+        with open(self.db, 'w+') as db_creator:
+            db_creator.write(f'DB_NAME["{db_name}"]')
+            db_creator.flush()
+            db_creator.seek(0)
+            db_creator.close()
 
     def remove_db(self):
         pass
