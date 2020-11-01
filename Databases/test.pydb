@@ -1,9 +1,1 @@
 DB_NAME["test"]
-
-GROUP[name="Group_1"]
-GROUP[name="Group_2"]
-GROUP[name="Group 2"]
-
-ENTRY[id="1", name="testEntry1", group="Group_1", type="string", value="John"]
-ENTRY[id="1", name="testEntry2", group="Group_2", type="string", value="John"]
-ENTRY[id="1", name="testEntry3", group="Group 2", type="string", value="John"]
