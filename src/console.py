@@ -13,12 +13,13 @@ import colors as clr
 start_menu_help_text = \
 """
 ----------------------------------------------------
-quit/exit       quits the program
-help            shows this help
+quit/exit                   quits the program
+help                        shows this help
 
-ch              if use_standard_db_path is true you can select a db from that directory
-                (only works if "use_standard_db_path" is activated)
-ch [db_path]    changes the DB file to your provided file path
+ch                          if use_standard_db_path is true you can select a db from that directory
+                            (only works if "use_standard_db_path" is activated)
+ch [db_path]                changes the DB file to your provided file path
+create [db_file] [db_name]  creates a new DB at the provided path with the provided DB_NAME
 ----------------------------------------------------
 """
 
@@ -48,6 +49,7 @@ use_standard_db_path = False
 
 # class object vars
 int_ = None
+mgr = None
 
 # load config.json
 try:
@@ -92,6 +94,7 @@ def quit():
 def start_menu():
     """start menu provides list of databases if 'use_standard_db_path = True' and allows to create and change a db"""
     global int_
+    global mgr
     global use_standard_db_path
 
     while True:
@@ -108,7 +111,7 @@ def start_menu():
             print(start_menu_help_text)
         elif _cmd[0] == 'quit' or _cmd[0] == 'exit':
             quit()
-        elif len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:           # if standard_db_file is set in config.json and use_standard_db_file = True,
+        elif len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:           # if standard_db_path is set in config.json and use_standard_db_path = True,
             files_in_std_dir = os.listdir(standard_db_path)                         # this will let the user choose a .pydb file from that directory
 
             # searches db files and prints a list of them to choose from
@@ -120,12 +123,14 @@ def start_menu():
                         databases_counter += 1
                         databases.append([databases_counter, standard_db_path + i])
                         print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i)
-            print(f'\n{clr.Fore.PURPLE}[q]{clr.RESET} quit\n')
 
             if databases_counter == 0:
                 print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.RESET)
-                use_standard_db_path = False
+                print('')
+                # use_standard_db_path = False
                 continue
+
+            print(f'\n{clr.Fore.LIGHT_RED}[q]{clr.RESET} quit\n')
 
             while True:
                 # lets the user choose from the list
@@ -153,6 +158,8 @@ def start_menu():
                             int_.get_script()
                             int_.get_groups()
                             print('Loaded\n')
+
+                            mgr = Mgr(db[1])
                             break
                         except err.FileNotDB as e:
                             print(e)
@@ -161,7 +168,7 @@ def start_menu():
 
                 break
             break
-        elif len(_cmd) == 2 and _cmd[0] == 'ch' and _cmd[1] != '' and not _cmd[1].isspace() and not use_standard_db_path:
+        elif len(_cmd) == 2 and _cmd[0] == 'ch' and _cmd[1] != '' and not _cmd[1].isspace():
             int_ = Int(_cmd[1])
 
             try:
@@ -170,6 +177,8 @@ def start_menu():
                 int_.get_script()
                 int_.get_groups()
                 print('Loaded\n')
+
+                mgr = Mgr(_cmd[1])
                 break
             except err.FileNotDB as e:
                 print(e)
@@ -179,8 +188,34 @@ def start_menu():
             if len(_cmd) > 2:
                 print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.RESET)
 
-            if len(_cmd) == 2 and _cmd[1] != '' or _cmd[1].isspace():
+            if len(_cmd) == 2 and _cmd[1] == '' or _cmd[1].isspace():
                 print(clr.Fore.LIGHT_RED + 'You have to provide a database file!' + clr.RESET)
+        elif _cmd[0] == 'create':
+            if len(_cmd) < 3 or _cmd[1] == '' or _cmd[2] == ''  or _cmd[1].isspace() or _cmd[2].isspace():
+                print(clr.Fore.LIGHT_RED + 'You have to provide a file name or path and a DB_NAME!' + clr.RESET)
+                continue
+            
+            db_file = _cmd[1]
+
+            if '/' not in _cmd[1] and use_standard_db_path:
+                db_file = standard_db_path + _cmd[1]
+
+            try:
+                mgr_ = Mgr(db_file)
+                mgr_.create_db(_cmd[2])
+            except err.DatabaseAlreadyExists as e:
+                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                continue
+
+            int_ = Int(db_file)
+            int_.check_db_file()
+            print('Loading the database...')
+            int_.get_script()
+            int_.get_groups()
+            print('Loaded\n')
+
+            mgr = Mgr(_cmd[1])
+            break
         else:
             print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
 
@@ -210,6 +245,7 @@ try:
             """prints help text"""
             print(help_text)
         elif _cmd[0] == 'back':
+            print('\n-----Start Menu-----\ntype "help" for a list of available commands\n' + '-' * 20 + '\n')
             start_menu()
         elif _cmd[0] == 'clear':
             if sys.platform == 'win32':
