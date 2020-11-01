@@ -10,6 +10,18 @@ from interpreter import Interpreter as Int
 import errors as err
 import colors as clr
 
+start_menu_help_text = \
+"""
+----------------------------------------------------
+quit/exit       quits the program
+help            shows this help
+
+ch              if use_standard_db_path is true you can select a db from that directory
+                (only works if "use_standard_db_path" is activated)
+ch [db_path]    changes the DB file to your provided file path
+----------------------------------------------------
+"""
+
 help_text = \
 """
 ----------------------------------------------------
@@ -22,6 +34,7 @@ lse group_name  lists all entries in the specified group
 ----------------------------------------------------
 """
 
+# checks the OS
 if sys.platform == 'win32':
     # os.system('cls')
     os.system('color F')
@@ -64,18 +77,39 @@ except FileNotFoundError:
     print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.RESET)
     pass
 
+def quit():
+    """quits the application"""
+    print('\nQuitting...')
+    if sys.platform == 'win32':
+        # os.system('cls') TODO add this again later
+        os.system('color F')
+        exit(0)
+    elif sys.platform == 'linux':
+        # os.system('clear') TODO add this again later
+        exit(0)
+    # sleep(1.5) TODO add this again later
+
 def start_menu():
+    """start menu provides list of databases if 'use_standard_db_path = True' and allows to create and change a db"""
     global int_
+    global use_standard_db_path
+
     while True:
         cmd = input(f'>> ')
         try:
             _cmd = shlex.split(cmd)
+            if '' in _cmd:
+                _cmd.remove('')
         except ValueError:
             print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.RESET)
             continue
-
-        if len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:
-            files_in_std_dir = os.listdir(standard_db_path)
+            
+        if _cmd[0] == 'help':
+            print(start_menu_help_text)
+        elif _cmd[0] == 'quit' or _cmd[0] == 'exit':
+            quit()
+        elif len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:           # if standard_db_file is set in config.json and use_standard_db_file = True,
+            files_in_std_dir = os.listdir(standard_db_path)                         # this will let the user choose a .pydb file from that directory
 
             # searches db files and prints a list of them to choose from
             databases_counter = 0
@@ -86,24 +120,28 @@ def start_menu():
                         databases_counter += 1
                         databases.append([databases_counter, standard_db_path + i])
                         print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i)
-            print('')
+            print(f'\n{clr.Fore.PURPLE}[q]{clr.RESET} quit\n')
 
             if databases_counter == 0:
                 print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.RESET)
-                print('Quitting')       # TODO let user create DB if there is no DB
-                exit(0)
+                use_standard_db_path = False
+                continue
 
             while True:
                 # lets the user choose from the list
                 try:
-                    db_num = int(input('Type in the number of the database you want to use\n> '))
+                    select_i = input('Type in the number of the database you want to use\n> ')
+                    if select_i == 'q' or select_i == 'quit':
+                        start_menu()
+                    else:
+                        db_num = int(select_i)
                 except ValueError:
                     print(clr.Fore.LIGHT_RED + 'The input needs to be a non decimal number!' + clr.RESET)
-                    continue
+                    start_menu()
 
                 if db_num < 1 or db_num > databases_counter:
                     print(clr.Fore.LIGHT_RED + 'The number you typed in is out of range!' + clr.RESET)
-                    continue
+                    start_menu()
 
                 for db in databases:
                     if db_num == db[0]:
@@ -111,6 +149,10 @@ def start_menu():
 
                         try:
                             int_.check_db_file()
+                            print('Loading the database...')
+                            int_.get_script()
+                            int_.get_groups()
+                            print('Loaded\n')
                             break
                         except err.FileNotDB as e:
                             print(e)
@@ -119,6 +161,28 @@ def start_menu():
 
                 break
             break
+        elif len(_cmd) == 2 and _cmd[0] == 'ch' and _cmd[1] != '' and not _cmd[1].isspace() and not use_standard_db_path:
+            int_ = Int(_cmd[1])
+
+            try:
+                int_.check_db_file()
+                print('Loading the database...')
+                int_.get_script()
+                int_.get_groups()
+                print('Loaded\n')
+                break
+            except err.FileNotDB as e:
+                print(e)
+            except err.DatabaseNotFound as e:
+                print(e)
+        elif _cmd[0] == 'ch':
+            if len(_cmd) > 2:
+                print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.RESET)
+
+            if len(_cmd) == 2 and _cmd[1] != '' or _cmd[1].isspace():
+                print(clr.Fore.LIGHT_RED + 'You have to provide a database file!' + clr.RESET)
+        else:
+            print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
 
 # welcome text
 print('-------------------------------------------')
@@ -129,30 +193,30 @@ print('-------------------------------------------\n')
 
 try:
     start_menu()
-    # if standard_db_file is set in config.json and use_standard_db_file = True,
-    # this will let the user choose a .pydb file from that directory
-
-    print('Loading the database...')
-    int_.get_script()
-    int_.get_groups()
-    print('Loaded\n')
 
     while True:
         cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.RESET})>> ')
         # _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
-        _cmd = re.split(r'"', cmd)
+        _cmd = shlex.split(cmd)
         if '' in _cmd:
             _cmd.remove('')
         cmd = cmd.split()
 
-        if cmd[0] == 'exit' or cmd[0] == 'quit':
+        if _cmd[0] == 'exit' or cmd[0] == 'quit':
             """quits console"""
             print('\nQuitting...')
             exit(0)
-        elif cmd[0] == 'help':
+        elif _cmd[0] == 'help':
             """prints help text"""
             print(help_text)
-        elif cmd[0] == 'lsg':
+        elif _cmd[0] == 'back':
+            start_menu()
+        elif _cmd[0] == 'clear':
+            if sys.platform == 'win32':
+                os.system('cls')
+            elif sys.platform == 'linux':
+                os.system('clear')
+        elif _cmd[0] == 'lsg':
             """lists all groups in DB"""
             print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.RESET}" -----')
 
@@ -164,7 +228,7 @@ try:
                 print(clr.Fore.ORANGE + group + clr.RESET)
 
             print('-' * len(f'----- Groups in "{int_.db_name}" -----') + '\n')
-        elif cmd[0] == 'lsea':
+        elif _cmd[0] == 'lsea':
             """lists all entries in all groups in DB"""
             int_.get_entries()
 
@@ -173,7 +237,7 @@ try:
             for entry in int_.db_entries:
                 print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
             print('')
-        elif cmd[0] == 'lse':
+        elif _cmd[0] == 'lse':
             """lists all entries in specified group"""
             if len(cmd) < 2:
                 print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.RESET)
@@ -190,14 +254,7 @@ try:
             except err.GroupNotFound as e:
                 print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
         else:
-            print(f'{clr.Fore.RED}"{cmd[0]}" is an unknown command, type help to see a list of all available commands{clr.RESET}')
+            print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
 
 except KeyboardInterrupt:
-    print('\nQuitting...')
-    if sys.platform == 'win32':
-        # os.system('cls') TODO add this again later
-        os.system('color F')
-    elif sys.platform == 'linux':
-        # os.system('clear') TODO add this again later
-        pass
-    # sleep(1.5) TODO add this again later
+    quit()
