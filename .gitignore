@@ -2,5 +2,5 @@
 src/__pycache__/
 
 # files in Databases
-Databases/*.pydb
+*.pydb
 !Databases/test.pydb
