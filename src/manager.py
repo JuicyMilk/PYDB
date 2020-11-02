@@ -29,14 +29,37 @@ class Manager:
         pass
 
     def add_group(self, group_name: str):
+        """adds group to database"""
         self.int_.get_groups()
+        script = self.int_.script_lines
 
         if group_name in self.int_.db_groups:
             raise err.GroupAlreadyExists
 
-        group_schema = f'\nGROUP[name="{group_name}"]'
-        with open(self.db, 'a') as group_writer:
-            group_writer.write(group_schema)
+        for line in script:
+             if line.isspace() or line == '':
+                 script.remove(line)
+
+        group_schema = f'GROUP[name="{group_name}"]'
+        
+        script_indx_db_name = next(line for line in script if line == f'DB_NAME["{self.int_.db_name}"]')
+        script_ = []
+
+        script_.append(script[script.index(script_indx_db_name)] + '\r\n')
+        if any('GROUP[name="' in line for line in script):
+            for line in script:
+                if line == f'DB_NAME["{self.int_.db_name}"]':
+                    continue
+                if 'ENTRY[' in line:
+                    script_.insert(''.join(script_).rindex('GROUP[name="'), group_schema + '\r\n')
+                script_.append(line + '\n')
+        else:
+            script_.append(group_schema + '\n\n')
+        
+        script_[-1] = script_[-1].replace('\n', '')
+        with open(self.db, 'w') as group_add:
+            for line in script_:
+                group_add.write(line)
 
     def remove_group(self, group: str):
         pass
