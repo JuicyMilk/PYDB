@@ -28,8 +28,15 @@ class Manager:
     def remove_db(self):
         pass
 
-    def add_group(self, group: str):
-        pass
+    def add_group(self, group_name: str):
+        self.int_.get_groups()
+
+        if group_name in self.int_.db_groups:
+            raise err.GroupAlreadyExists
+
+        group_schema = f'\nGROUP[name="{group_name}"]'
+        with open(self.db, 'a') as group_writer:
+            group_writer.write(group_schema)
 
     def remove_group(self, group: str):
         pass
