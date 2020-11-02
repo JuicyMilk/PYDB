@@ -52,6 +52,7 @@ class Interpreter:
 
     def get_groups(self):
         """gets DB group names from self.script_lines and saves them in self.db_groups"""
+        self.get_script()
         self.check_db_file()
         self.db_groups.clear()
 
