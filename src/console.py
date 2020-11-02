@@ -58,7 +58,7 @@ elif sys.platform == 'linux':
 
     py_ver = sys.version_info[0] + sys.version_info[1]
 
-# load config.json
+# loads config.json
 try:
     with open('config.json', 'r') as cfg_r:
         json_cfg = cfg_r.read()
@@ -67,10 +67,10 @@ try:
     if 'standard_db_path' in cfg and not cfg['standard_db_path'].isspace() and cfg['standard_db_path'] != '':
         # checks if standard_db_path exists and is a path
         if not os.path.exists(cfg['standard_db_path']):
-            print(clr.Fore.LIGHT_RED + 'The provided path wasn\'t found!\nChange your "config.json" file' + clr.RESET)
+            print(clr.Fore.LIGHT_RED + 'The provided path wasn\'t found!\nChange your "config.json" file' + clr.Fore.WHITE)
             exit(0)
         if os.path.isfile(cfg['standard_db_path']):
-            print(clr.Fore.LIGHT_RED + 'The provided path can\'t be a file!\nChange your "config.json" file' + clr.RESET)
+            print(clr.Fore.LIGHT_RED + 'The provided path can\'t be a file!\nChange your "config.json" file' + clr.Fore.WHITE)
             exit(0)
 
         standard_db_path = cfg['standard_db_path']
@@ -83,7 +83,7 @@ try:
         if not standard_db_path.endswith('/'):
             standard_db_path += '/'             # adds a / if there is no at the end ot the standard_db_path
 except FileNotFoundError:
-    print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.RESET)
+    print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.Fore.WHITE)
     pass
 
 def quit():
@@ -129,7 +129,7 @@ def start_menu():
             if _cmd == []:
                 continue
         except ValueError:
-            print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.RESET)
+            print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.Fore.WHITE)
             continue
             
         if _cmd[0] == 'help':
@@ -154,15 +154,15 @@ def start_menu():
                     if i.endswith('.pydb'):
                         databases_counter += 1
                         databases.append([databases_counter, standard_db_path + i])
-                        print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.RESET + i)
+                        print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.Fore.WHITE + i)
 
             if databases_counter == 0:
-                print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.RESET)
+                print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.Fore.WHITE)
                 print('')
                 # use_standard_db_path = False
                 continue
 
-            print(f'\n{clr.Fore.LIGHT_RED}[q]{clr.RESET} quit\n')
+            print(f'\n{clr.Fore.LIGHT_RED}[q]{clr.Fore.WHITE} quit\n')
 
             while True:
                 # lets the user choose from the list
@@ -173,11 +173,11 @@ def start_menu():
                     else:
                         db_num = int(select_i)
                 except ValueError:
-                    print(clr.Fore.LIGHT_RED + 'The input needs to be a non decimal number!' + clr.RESET)
+                    print(clr.Fore.LIGHT_RED + 'The input needs to be a non decimal number!' + clr.Fore.WHITE)
                     continue
 
                 if db_num < 1 or db_num > databases_counter:
-                    print(clr.Fore.LIGHT_RED + 'The number you typed in is out of range!' + clr.RESET)
+                    print(clr.Fore.LIGHT_RED + 'The number you typed in is out of range!' + clr.Fore.WHITE)
                     start_menu()
 
                 for db in databases:
@@ -188,7 +188,6 @@ def start_menu():
                             int_.check_db_file()
                             print('Loading the database...')
                             int_.get_script()
-                            int_.get_groups()
                             print('Loaded\n')
 
                             mgr = Mgr(db[1])
@@ -207,24 +206,23 @@ def start_menu():
                 int_.check_db_file()
                 print('Loading the database...')
                 int_.get_script()
-                int_.get_groups()
                 print('Loaded\n')
 
                 mgr = Mgr(_cmd[1])
                 break
             except err.FileNotDB as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
             except err.DatabaseNotFound as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
         elif _cmd[0] == 'ch':
             if len(_cmd) > 2:
-                print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.RESET)
+                print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.Fore.WHITE)
 
             if len(_cmd) == 2 and _cmd[1] == '' or _cmd[1].isspace():
-                print(clr.Fore.LIGHT_RED + 'You have to provide a database file!' + clr.RESET)
+                print(clr.Fore.LIGHT_RED + 'You have to provide a database file!' + clr.Fore.WHITE)
         elif _cmd[0] == 'create':
             if len(_cmd) < 3 or _cmd[1] == '' or _cmd[2] == ''  or _cmd[1].isspace() or _cmd[2].isspace():
-                print(clr.Fore.LIGHT_RED + 'You have to provide a file name or path and a DB_NAME!' + clr.RESET)
+                print(clr.Fore.LIGHT_RED + 'You have to provide a file name or path and a DB_NAME!' + clr.Fore.WHITE)
                 continue
             
             db_file = _cmd[1]
@@ -236,23 +234,22 @@ def start_menu():
                 mgr_ = Mgr(db_file)
                 mgr_.create_db(_cmd[2])
             except err.DatabaseAlreadyExists as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
                 continue
             except err.FileNotDB as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
                 continue
 
             int_ = Int(db_file)
             int_.check_db_file()
             print('Loading the database...')
             int_.get_script()
-            int_.get_groups()
             print('Loaded\n')
 
             mgr = Mgr(_cmd[1])
             break
         else:
-            print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
+            print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
 
 # welcome text
 print('-------------------------------------------')
@@ -265,12 +262,15 @@ try:
     start_menu()
 
     while True:
-        cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.RESET})>> ')
+        cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.Fore.WHITE})>> ')
         # _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
         _cmd = shlex.split(cmd)
         if '' in _cmd:
             _cmd.remove('')
         cmd = cmd.split()
+
+        if _cmd == []:
+            continue
 
         if _cmd[0] == 'exit' or _cmd[0] == 'quit':
             """quits console"""
@@ -296,9 +296,9 @@ try:
                 print('There are no groups in this database')
                 continue
 
-            print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.RESET}" -----')
+            print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.Fore.WHITE}" -----')
             for group in int_.db_groups:
-                print(clr.Fore.ORANGE + group + clr.RESET)
+                print(clr.Fore.ORANGE + group + clr.Fore.WHITE)
 
             print('-' * len(f'----- Groups in "{int_.db_name}" -----') + '\n')
         elif _cmd[0] == 'lsea':
@@ -306,14 +306,14 @@ try:
             int_.get_entries()
 
             print('')
-            print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+            print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
             for entry in int_.db_entries:
-                print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.RESET)
+                print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.Fore.WHITE)
             print('')
         elif _cmd[0] == 'lse':
             """lists all entries in specified group"""
             if len(cmd) < 2:
-                print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.RESET)
+                print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.Fore.WHITE)
 
             try:
                 try:
@@ -321,29 +321,29 @@ try:
                 except IndexError:
                     entries_in_group = int_.get_entries_in_group(cmd[1])
 
-                print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.RESET}')
+                print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
                 for entry in entries_in_group:
-                    print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.RESET)
+                    print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.Fore.WHITE)
             except err.GroupNotFound as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
         elif _cmd[0] == 'add':
             """adds group or entry"""
             if len(_cmd) < 3 or _cmd[1] == '' or _cmd[1].isspace() or _cmd[2] == '' or _cmd[2].isspace():
-                print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.RESET)
+                print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                 continue
             
             # adds group
             if _cmd[1] == 'group':
                 try:
                     mgr.add_group(_cmd[2])
-                except err.GroupAllreadyExists as e:
-                    print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                except err.GroupAlreadyExists as e:
+                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
                     continue
 
                 print('Added group')
                 continue
         else:
-            print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
+            print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
 
 except KeyboardInterrupt:
     quit()
