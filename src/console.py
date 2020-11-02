@@ -13,8 +13,10 @@ import colors as clr
 start_menu_help_text = \
 """
 ----------------------------------------------------
-quit/exit                   quits the program
 help                        shows this help
+quit/exit                   quits the program
+clear                       clears the terminal
+reload                      restarts the application (useful if you change config.json)
 
 ch                          if use_standard_db_path is true you can select a db from that directory
                             (only works if "use_standard_db_path" is activated)
@@ -26,14 +28,25 @@ create [db_file] [db_name]  creates a new DB at the provided path with the provi
 help_text = \
 """
 ----------------------------------------------------
-quit/exit       quits the program
 help            shows this help
+quit/exit       quits the program
+clear           clears the terminal
+reload          restarts the application (usefull if you change config.json)
 
 lsg             lists all groups in database
 lsea            lists all entries in all groups
 lse group_name  lists all entries in the specified group
 ----------------------------------------------------
 """
+
+# basic settings
+standard_db_path = ''
+use_standard_db_path = False
+
+# class object vars
+int_ = None
+mgr = None
+py_ver = None
 
 # checks the OS
 if sys.platform == 'win32':
@@ -43,13 +56,7 @@ elif sys.platform == 'linux':
     import readline
     os.system('clear')
 
-# basic settings
-standard_db_path = ''
-use_standard_db_path = False
-
-# class object vars
-int_ = None
-mgr = None
+    py_ver = sys.version_info[0] + sys.version_info[1]
 
 # load config.json
 try:
@@ -82,14 +89,28 @@ except FileNotFoundError:
 def quit():
     """quits the application"""
     print('\nQuitting...')
+    sleep(1.5)
     if sys.platform == 'win32':
         os.system('cls')
         os.system('color F')
-        exit(0)
     elif sys.platform == 'linux':
         os.system('clear')
-        exit(0)
+    exit(0)
+
+def reload():
+    print('\nReloading...')
     sleep(1.5)
+    if sys.platform == 'win32':
+        try:
+            os.system('python .\console.py')
+        except KeyboardInterrupt:
+            exit(0)
+    elif sys.platform == 'linux':
+        try:
+            os.system(py_ver + ' console.py')
+        except KeyboardInterrupt:
+            exit(0)
+    exit(0)
 
 def start_menu():
     """start menu provides list of databases if 'use_standard_db_path = True' and allows to create and change a db"""
@@ -98,11 +119,15 @@ def start_menu():
     global use_standard_db_path
 
     while True:
+        print('Current directory: ' + os.path.dirname(os.path.realpath(__file__)))
         cmd = input(f'>> ')
         try:
             _cmd = shlex.split(cmd)
             if '' in _cmd:
                 _cmd.remove('')
+            
+            if _cmd == []:
+                continue
         except ValueError:
             print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.RESET)
             continue
@@ -111,6 +136,13 @@ def start_menu():
             print(start_menu_help_text)
         elif _cmd[0] == 'quit' or _cmd[0] == 'exit':
             quit()
+        elif _cmd[0] == 'clear':
+            if sys.platform == 'win32':
+                os.system('cls')
+            elif sys.platform == 'linux':
+                os.system('clear')
+        elif _cmd[0] == 'reload':
+            reload()
         elif len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:           # if standard_db_path is set in config.json and use_standard_db_path = True,
             files_in_std_dir = os.listdir(standard_db_path)                         # this will let the user choose a .pydb file from that directory
 
@@ -142,7 +174,7 @@ def start_menu():
                         db_num = int(select_i)
                 except ValueError:
                     print(clr.Fore.LIGHT_RED + 'The input needs to be a non decimal number!' + clr.RESET)
-                    start_menu()
+                    continue
 
                 if db_num < 1 or db_num > databases_counter:
                     print(clr.Fore.LIGHT_RED + 'The number you typed in is out of range!' + clr.RESET)
@@ -181,9 +213,9 @@ def start_menu():
                 mgr = Mgr(_cmd[1])
                 break
             except err.FileNotDB as e:
-                print(e)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
             except err.DatabaseNotFound as e:
-                print(e)
+                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
         elif _cmd[0] == 'ch':
             if len(_cmd) > 2:
                 print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.RESET)
@@ -204,6 +236,9 @@ def start_menu():
                 mgr_ = Mgr(db_file)
                 mgr_.create_db(_cmd[2])
             except err.DatabaseAlreadyExists as e:
+                print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                continue
+            except err.FileNotDB as e:
                 print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
                 continue
 
@@ -237,10 +272,9 @@ try:
             _cmd.remove('')
         cmd = cmd.split()
 
-        if _cmd[0] == 'exit' or cmd[0] == 'quit':
+        if _cmd[0] == 'exit' or _cmd[0] == 'quit':
             """quits console"""
-            print('\nQuitting...')
-            exit(0)
+            quit()
         elif _cmd[0] == 'help':
             """prints help text"""
             print(help_text)
@@ -252,14 +286,17 @@ try:
                 os.system('cls')
             elif sys.platform == 'linux':
                 os.system('clear')
+        elif _cmd[0] == 'reload':
+            reload()
         elif _cmd[0] == 'lsg':
             """lists all groups in DB"""
-            print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.RESET}" -----')
+            int_.get_groups()
 
             if not int_.db_groups:
                 print('There are no groups in this database')
                 continue
 
+            print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.RESET}" -----')
             for group in int_.db_groups:
                 print(clr.Fore.ORANGE + group + clr.RESET)
 
@@ -289,6 +326,22 @@ try:
                     print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.RESET)
             except err.GroupNotFound as e:
                 print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+        elif _cmd[0] == 'add':
+            """adds group or entry"""
+            if len(_cmd) < 3 or _cmd[1] == '' or _cmd[1].isspace() or _cmd[2] == '' or _cmd[2].isspace():
+                print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.RESET)
+                continue
+            
+            # adds group
+            if _cmd[1] == 'group':
+                try:
+                    mgr.add_group(_cmd[2])
+                except err.GroupAllreadyExists as e:
+                    print(clr.Fore.LIGHT_RED + str(e) + clr.RESET)
+                    continue
+
+                print('Added group')
+                continue
         else:
             print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.RESET}')
 
