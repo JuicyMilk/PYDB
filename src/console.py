@@ -33,7 +33,6 @@ help                shows this help
 quit/exit           quits the program
 clear               clears the terminal
 reload              reloads config.json
-restart             restarts the application
 
 lsg                 lists all groups in database
 lsea                lists all entries in all groups
@@ -104,15 +103,11 @@ def quit():
     exit(0)
 
 def restart():
-    print('\nReloading...')
+    print('\nRestart...')
     sleep(1)
     if sys.platform == 'win32':
         try:
-            # print(os.path.realpath(__file__))
-            # subprocess.run('python ' + os.path.realpath(__file__))
-            # sp = subprocess.STARTUPINFO(hStdInput=None, hStdOutput=None, hStdError=None)
-            # sp.dwFlags |= subprocess.DETACHED_PROCESS
-            subprocess.Popen(['python.exe', 'C:\\Users\\domsc\\Desktop\\PythonDBsystem\\PYDBvenv\\files\\src\\console.py'])
+            subprocess.run('python ' + os.path.realpath(__file__))
             sys.exit(0)
         except KeyboardInterrupt:
             exit(0)
