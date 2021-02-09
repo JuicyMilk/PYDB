@@ -27,26 +27,35 @@ create [db_file] [db_name]  creates a new DB at the provided path with the provi
 """
 
 help_text = \
-"""
+f"""
 ----------------------------------------------------
-*basic commands
+
+{clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
+{clr.Fore.PURPLE}basic commands{clr.Fore.WHITE}
+{clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
 help                shows this help
 quit/exit           quits the program
 clear               clears the terminal
 back                get back to start menu
 reload              reloads config.json // not working at the moment
 
-*list commands
+{clr.Fore.DARK_GREY}============={clr.Fore.WHITE}
+{clr.Fore.PURPLE}list commands{clr.Fore.WHITE}
+{clr.Fore.DARK_GREY}============={clr.Fore.WHITE}
 lsg                 lists all groups in database
 lsea                lists all entries in all groups
 lse [group_name]    lists all entries in the specified group
 
-*add commands
+{clr.Fore.DARK_GREY}============{clr.Fore.WHITE}
+{clr.Fore.PURPLE}add commands{clr.Fore.WHITE}
+{clr.Fore.DARK_GREY}============{clr.Fore.WHITE}
 add <arg 1> <arg 2>:
     <arg 1>: required; either "group" or "entry"
     <arg 2>: required; a name for either the group or the entry
 
-*remove commands
+{clr.Fore.DARK_GREY}==============={clr.Fore.WHITE}
+{clr.Fore.PURPLE}remove commands{clr.Fore.WHITE}
+{clr.Fore.DARK_GREY}==============={clr.Fore.WHITE}
 rm <arg 1>:
     <arg 1>: required; either "group" or "entry"
 
