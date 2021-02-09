@@ -1,4 +1,5 @@
 import os
+import re
 
 from interpreter import Interpreter as Int
 import errors as err
@@ -35,35 +36,20 @@ class Manager:
 
         if group_name in self.int_.db_groups:
             raise err.GroupAlreadyExists
-
+        
         for line in script:
-             if line.isspace() or line == '':
-                 script.remove(line)
+            if re.search(r'GROUP\[name="(.*?)"]', line):
+                try:
+                    if not re.findall(r'GROUP\[name="(.*?)"]', script[script.index(line) + 1]):
+                        script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
+                        break
+                except IndexError:
+                        script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
+                        break
 
-        group_schema = f'GROUP[name="{group_name}"]'
-
-        script_indx_db_name = next(line for line in script if line == f'DB_NAME["{self.int_.db_name}"]')
-        script_ = []
-
-        script_.append(script[script.index(script_indx_db_name)] + '\r\n')
-        if any('GROUP[name="' in line for line in script):
-            for line in script:
-                if line == f'DB_NAME["{self.int_.db_name}"]':
-                    continue
-                if 'ENTRY[' in line:
-                    script_.append(line)
-                    print(script_)
-                    script_.insert(''.join(script_).rindex('GROUP[name="'), group_schema + '\r\n')
-                    break
-                script_.append(line + '\n')
-            script_.append(group_schema + '\n')
-        else:
-            script_.append(group_schema + '\n\n')
-
-        script_[-1] = script_[-1].replace('\n', '')
         with open(self.db, 'w') as group_add:
-            for line in script_:
-                group_add.write(line)
+            for line in script:
+                group_add.write(line + '\n')
 
     def remove_group(self, group: str):
         """removes group from db with all its entries"""
