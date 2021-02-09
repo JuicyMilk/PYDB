@@ -54,7 +54,7 @@ import errors as err
 # pre-defining your Interpreter object
 int_ = None
 
-# Let's you select a database file
+# Lets you choose a database file
 db_file = input('Enter the path to your PYDB database\n>> ')
 
 try:
