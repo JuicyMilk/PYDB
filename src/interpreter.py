@@ -52,8 +52,8 @@ class Interpreter:
 
     def get_groups(self):
         """gets DB group names from self.script_lines and saves them in self.db_groups"""
-        self.get_script()
         self.check_db_file()
+        self.get_script()
         self.db_groups.clear()
 
         groups = []
@@ -71,6 +71,7 @@ class Interpreter:
 
     def get_entries(self):
         self.check_db_file()
+        self.get_script()
         self.db_entries.clear()
         self.db_entry_names.clear()
 
