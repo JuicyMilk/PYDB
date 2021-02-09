@@ -36,16 +36,20 @@ class Manager:
 
         if group_name in self.int_.db_groups:
             raise err.GroupAlreadyExists
-        
-        for line in script:
-            if re.search(r'GROUP\[name="(.*?)"]', line):
-                try:
-                    if not re.findall(r'GROUP\[name="(.*?)"]', script[script.index(line) + 1]):
-                        script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
-                        break
-                except IndexError:
-                        script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
-                        break
+
+        if self.int_.db_groups == []:
+            script.insert(1, '')
+            script.insert(2, f'GROUP[name="{group_name}"]')
+        else:
+            for line in script:
+                if re.search(r'GROUP\[name="(.*?)"]', line):
+                    try:
+                        if not re.findall(r'GROUP\[name="(.*?)"]', script[script.index(line) + 1]):
+                            script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
+                            break
+                    except IndexError:
+                            script.insert(script.index(line) + 1, f'GROUP[name="{group_name}"]')
+                            break
 
         with open(self.db, 'w') as group_add:
             for line in script:
@@ -67,6 +71,8 @@ class Manager:
         for line in script:
             if 'ENTRY[id=' in line and f'group="{group}"' in line:
                 script.remove(line)
+
+        script.insert(1, '')
 
         with open(self.db, 'w') as group_rm:
             for line in script:
