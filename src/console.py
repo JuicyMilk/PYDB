@@ -154,6 +154,8 @@ def start_menu():
                 os.system('clear')
         elif _cmd[0] == 'reload':
             reload()
+        elif _cmd[0] == 'restart':
+            restart()
         elif _cmd[0] == 'ch':
             if len(_cmd) == 1 and _cmd[0] == 'ch' and not use_standard_db_path:
                 print(clr.Fore.YELLOW + 'You set "use_standard_db_path" to false in you config.json. Type in a path or change it and then type in "reload"' + clr.Fore.WHITE)
@@ -324,6 +326,9 @@ def main():
             elif _cmd[0] == 'lsea':
                 """lists all entries in all groups in DB"""
                 int_.get_entries()
+                if int_.db_entries == []:
+                    print('There are no entries in this database')
+                    continue
 
                 print('')
                 print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
@@ -334,6 +339,7 @@ def main():
                 """lists all entries in specified group"""
                 if len(cmd) < 2:
                     print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.Fore.WHITE)
+                    continue
 
                 try:
                     try:
@@ -362,6 +368,18 @@ def main():
 
                     print('Added group')
                     continue
+            elif _cmd[0] == 'rm':
+                """removes group or entry"""
+                if len(_cmd) < 3 or _cmd[1] == '' or _cmd[1].isspace() or _cmd[2] == '' or _cmd[2].isspace():
+                    print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                    continue
+
+                if _cmd[1] == 'group':
+                    try:
+                        mgr.remove_group(_cmd[2])
+                    except err.GroupNotFound as e:
+                        print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                        continue
             else:
                 print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
 
