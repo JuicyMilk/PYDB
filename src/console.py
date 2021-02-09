@@ -29,14 +29,27 @@ create [db_file] [db_name]  creates a new DB at the provided path with the provi
 help_text = \
 """
 ----------------------------------------------------
+*basic commands
 help                shows this help
 quit/exit           quits the program
 clear               clears the terminal
-reload              reloads config.json
+back                get back to start menu
+reload              reloads config.json // not working at the moment
 
+*list commands
 lsg                 lists all groups in database
 lsea                lists all entries in all groups
 lse [group_name]    lists all entries in the specified group
+
+*add commands
+add <arg 1> <arg 2>:
+    <arg 1>: required; either "group" or "entry"
+    <arg 2>: required; a name for either the group or the entry
+
+*remove commands
+rm <arg 1>:
+    <arg 1>: required; either "group" or "entry"
+
 ----------------------------------------------------
 """
 
@@ -90,6 +103,8 @@ def load_config():
     except FileNotFoundError:
         print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.Fore.WHITE)
         pass
+
+    print(clr.Fore.YELLOW + '[i] If you change config.json you have to restart the application manually' + clr.Fore.WHITE)
 
 def quit():
     """quits the application"""
@@ -153,9 +168,11 @@ def start_menu():
             elif sys.platform == 'linux':
                 os.system('clear')
         elif _cmd[0] == 'reload':
-            reload()
+            # reload()
+            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
         elif _cmd[0] == 'restart':
-            restart()
+            # restart()
+            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
         elif _cmd[0] == 'ch':
             if len(_cmd) == 1 and _cmd[0] == 'ch' and not use_standard_db_path:
                 print(clr.Fore.YELLOW + 'You set "use_standard_db_path" to false in you config.json. Type in a path or change it and then type in "reload"' + clr.Fore.WHITE)
@@ -268,6 +285,7 @@ def start_menu():
         else:
             print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
 
+# TODO: rework back method and start menu
 def main():
     # welcome text
     print('-------------------------------------------')
@@ -307,9 +325,11 @@ def main():
                 elif sys.platform == 'linux':
                     os.system('clear')
             elif _cmd[0] == 'reload':
-                reload()
+                # reload()
+                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
             elif _cmd[0] == 'restart':
-                restart()
+                # restart()
+                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
             elif _cmd[0] == 'lsg':
                 """lists all groups in DB"""
                 int_.get_groups()
@@ -347,6 +367,10 @@ def main():
                     except IndexError:
                         entries_in_group = int_.get_entries_in_group(cmd[1])
 
+                    if entries_in_group == []:
+                        print(clr.Fore.YELLOW + 'There are no entries in the specified group' + clr.Fore.WHITE)
+                        continue
+
                     print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
                     for entry in entries_in_group:
                         print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.Fore.WHITE)
@@ -354,12 +378,19 @@ def main():
                     print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
             elif _cmd[0] == 'add':
                 """adds group or entry"""
-                if len(_cmd) < 3 or _cmd[1] == '' or _cmd[1].isspace() or _cmd[2] == '' or _cmd[2].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
+                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to add\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                     continue
                 
                 # adds group
                 if _cmd[1] == 'group':
+                    if len(_cmd) < 3:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify a name for the group' + clr.Fore.WHITE)
+                        continue
+                    elif len(_cmd) > 3:
+                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        continue
+
                     try:
                         mgr.add_group(_cmd[2])
                     except err.GroupAlreadyExists as e:
@@ -370,16 +401,35 @@ def main():
                     continue
             elif _cmd[0] == 'rm':
                 """removes group or entry"""
-                if len(_cmd) < 3 or _cmd[1] == '' or _cmd[1].isspace() or _cmd[2] == '' or _cmd[2].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You need to specify arguments!\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
+                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to delete\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                     continue
 
                 if _cmd[1] == 'group':
-                    try:
-                        mgr.remove_group(_cmd[2])
-                    except err.GroupNotFound as e:
-                        print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    if len(_cmd) < 3:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify the name of the group' + clr.Fore.WHITE)
                         continue
+                    elif len(_cmd) > 3:
+                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        continue
+
+                    int_.get_groups()
+                    if _cmd[2] not in int_.db_groups:
+                        print(clr.Fore.LIGHT_RED + 'The specified group could not be found!' + clr.Fore.WHITE)
+                        continue
+
+                    confirmation = input('Are you sure about deleting the group "' + _cmd[2] + '"? All entries within this group will be remove as well.\n[y/n] ')
+
+                    if confirmation == 'n':
+                        print('Group didn\'t get removed')
+                    elif confirmation == 'y':
+                        try:
+                            mgr.remove_group(_cmd[2])
+                        except err.GroupNotFound as e:
+                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                            continue
+                    else:
+                        print('Abort removing process. Group didn\'t get removed')
             else:
                 print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
 
