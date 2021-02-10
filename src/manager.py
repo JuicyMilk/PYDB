@@ -61,10 +61,6 @@ class Manager:
         script = self.int_.script_lines
 
         for line in script:
-            if line.isspace() or line == '':
-                script.remove(line)
-
-        for line in script:
             if line == f'GROUP[name="{group}"]':
                 script.remove(line)
 
@@ -72,17 +68,43 @@ class Manager:
             if 'ENTRY[id=' in line and f'group="{group}"' in line:
                 script.remove(line)
 
-        script.insert(1, '')
+        if script[-1] == '':
+            del script[-1]
 
         with open(self.db, 'w') as group_rm:
             for line in script:
                 group_rm.write(line + '\n')
 
-    def edit_group(self, group: str):
-        pass
+    def edit_group(self, group: str, new_group_name: str):
+        """changes group name"""
+        entries_in_group = self.int_.get_entries_in_group(group)
+        script = self.int_.script_lines
 
-    def add_entry(self, entry: str):
-        pass
+        if new_group_name in self.int_.db_groups:
+            raise err.GroupAlreadyExists
+
+        for line in script:
+            if line == f'GROUP[name="{group}"]':
+                group_indx = script.index(line)
+                script.remove(line)
+                script.insert(group_indx, f'GROUP[name="{new_group_name}"]')
+
+            if re.search(r'ENTRY\[id="(\d)", name="(.?)", group="' + group + r'"', line):
+                entry_indx = script.index(line)
+
+                script.remove(line)
+                script.insert(entry_indx, line.replace(f'group="{group}"', f'group="{new_group_name}"'))
+            
+        with open(self.db, 'w') as group_edit:
+            for line in script:
+                group_edit.write(line + '\n')
+
+    def add_entry(self, name: str, group: str, data_type=None, value=None, id_value=None):
+        """adds entry to database"""
+        self.int_.get_groups()
+
+        entries_in_group = self.int_.get_entries_in_group(group)
+        print(entries_in_group)
 
     def remove_entry(self, entry: str):
         pass
