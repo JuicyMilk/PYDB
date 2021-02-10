@@ -387,6 +387,7 @@ def main():
                     print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
             elif _cmd[0] == 'add':
                 """adds group or entry"""
+                # TODO: add entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
                     print(clr.Fore.LIGHT_RED + 'You need to specify what you want to add\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                     continue
@@ -408,12 +409,19 @@ def main():
 
                     print('Added group')
                     continue
+                elif _cmd[1] == 'entry':
+                    if len(_cmd) < 3: print(clr.Fore.LIGHT_RED + 'You need to specify a name for the entry' + clr.Fore.WHITE); continue
+                    if len(_cmd) < 4: print(clr.Fore.LIGHT_RED + 'You need to specify the group which the entry belongs to' + clr.Fore.WHITE); continue
+
+                    
             elif _cmd[0] == 'rm':
                 """removes group or entry"""
+                # TODO: rm entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
                     print(clr.Fore.LIGHT_RED + 'You need to specify what you want to delete\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                     continue
 
+                # removes group
                 if _cmd[1] == 'group':
                     if len(_cmd) < 3:
                         print(clr.Fore.LIGHT_RED + 'You need to specify the name of the group' + clr.Fore.WHITE)
@@ -439,9 +447,28 @@ def main():
                             continue
                     else:
                         print('Abort removing process. Group didn\'t get removed')
+            elif _cmd[0] == 'edit':
+                # TODO: edit entry
+                if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
+                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to edit\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                    continue
+
+                # changes group name
+                if _cmd[1] == 'group':
+                    if len(_cmd) < 3:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify the name of the group' + clr.Fore.WHITE)
+                        continue
+                    if len(_cmd) < 4:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify a new name for the group' + clr.Fore.WHITE)
+                        continue
+
+                try:
+                    mgr.edit_group(_cmd[2], _cmd[3])
+                    print('Successfully updated group')
+                except (err.GroupAlreadyExists, err.GroupNotFound) as e:
+                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
             else:
                 print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
-
     except KeyboardInterrupt:
         quit()
 
