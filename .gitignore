@@ -4,3 +4,6 @@ src/__pycache__/
 # files in Databases
 *.pydb
 !Databases/test.pydb
+
+# old_code.txt
+src/old_code.txt
