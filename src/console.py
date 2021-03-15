@@ -71,6 +71,7 @@ int_ = None
 mgr = None
 py_ver = None
 
+# NOTE: will probably be removed
 # checks the OS
 if sys.platform == 'win32':
     os.system('cls')
@@ -314,6 +315,7 @@ def main():
             _cmd = shlex.split(cmd)
             if '' in _cmd:
                 _cmd.remove('')
+            cmd_str = cmd
             cmd = cmd.split()
 
             if _cmd == []:
@@ -387,7 +389,6 @@ def main():
                     print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
             elif _cmd[0] == 'add':
                 """adds group or entry"""
-                # TODO: add entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
                     print(clr.Fore.LIGHT_RED + 'You need to specify what you want to add\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
                     continue
@@ -409,11 +410,45 @@ def main():
 
                     print('Added group')
                     continue
+                # adds entry
                 elif _cmd[1] == 'entry':
-                    if len(_cmd) < 3: print(clr.Fore.LIGHT_RED + 'You need to specify a name for the entry' + clr.Fore.WHITE); continue
-                    if len(_cmd) < 4: print(clr.Fore.LIGHT_RED + 'You need to specify the group which the entry belongs to' + clr.Fore.WHITE); continue
+                    if len(_cmd) < 3:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify an entry schema' + clr.Fore.WHITE)
+                        continue
 
-                    
+                    if re.search(r'\(id=(.*?);name="(.*?)";group="(.*?)";data_type="(.*?)";value="(.*?)"\)', cmd_str):
+                        entry_values = re.findall(r'\(id=(.*?);name="(.*?)";group="(.*?)";data_type="(.*?)";value="(.*?)"\)', cmd_str)
+
+                        id = entry_values[0][0]
+                        name = entry_values[0][1]
+                        group = entry_values[0][2]
+                        data_type = entry_values[0][3]
+                        value = entry_values[0][4]
+                        
+                        try:
+                            int(id)
+                        except ValueError:
+                            if id == '':
+                                print(clr.Fore.LIGHT_RED + '"id" cannot be empty, it needs to be either set to an integer or to "AUTO"' + clr.Fore.WHITE)
+                                continue
+                            elif id != 'AUTO':
+                                print(clr.Fore.LIGHT_RED + '"id" needs to be an integer or set to "AUTO" (without quotes)' + clr.Fore.WHITE)
+                                continue
+
+                        if name == '':
+                            print(clr.Fore.LIGHT_RED + '"name" cannot be empty' + clr.Fore.WHITE)
+                            continue
+                        if group == '':
+                            print(clr.Fore.LIGHT_RED + '"group" cannot be empty' + clr.Fore.WHITE)
+                            continue
+
+                        # PROCEED HERE | TODO: add entry to db via mgr
+                        # entry = f'ENTRY[id="{id}", name="{name}", group="{group}", type="{data_type}", value="{value}"]'
+                        # mgr.add_entry()
+
+                    else:
+                        print(clr.Fore.LIGHT_RED + 'Your schema caused an error. Please try again.' + clr.Fore.WHITE)
+
             elif _cmd[0] == 'rm':
                 """removes group or entry"""
                 # TODO: rm entry

@@ -101,6 +101,7 @@ class Manager:
 
     def add_entry(self, name: str, group: str, data_type=None, value=None, id_value=None):
         """adds entry to database"""
+        # TODO: add entry to db
         self.int_.get_groups()
 
         entries_in_group = self.int_.get_entries_in_group(group)
