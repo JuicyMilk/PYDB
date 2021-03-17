@@ -441,10 +441,11 @@ def main():
                         if group == '':
                             print(clr.Fore.LIGHT_RED + '"group" cannot be empty' + clr.Fore.WHITE)
                             continue
-
-                        # PROCEED HERE | TODO: add entry to db via mgr
-                        # entry = f'ENTRY[id="{id}", name="{name}", group="{group}", type="{data_type}", value="{value}"]'
-                        # mgr.add_entry()
+                        
+                        try:
+                            mgr.add_entry(name, group, data_type, value, id)
+                        except (err.DoubleID, err.GroupNotFound, err.DBValueError) as e:
+                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
 
                     else:
                         print(clr.Fore.LIGHT_RED + 'Your schema caused an error. Please try again.' + clr.Fore.WHITE)

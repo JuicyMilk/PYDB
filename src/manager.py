@@ -89,6 +89,7 @@ class Manager:
                 script.remove(line)
                 script.insert(group_indx, f'GROUP[name="{new_group_name}"]')
 
+            # TODO: make re.search safe, so value won't be scanned
             if re.search(r'ENTRY\[id="(\d)", name="(.?)", group="' + group + r'"', line):
                 entry_indx = script.index(line)
 
@@ -99,13 +100,72 @@ class Manager:
             for line in script:
                 group_edit.write(line + '\n')
 
-    def add_entry(self, name: str, group: str, data_type=None, value=None, id_value=None):
+    def add_entry(self, name: str, group: str, data_type='', value='', id_value=''):
         """adds entry to database"""
-        # TODO: add entry to db
         self.int_.get_groups()
 
         entries_in_group = self.int_.get_entries_in_group(group)
-        print(entries_in_group)
+        
+        # check id first
+        entry_ids = []
+        for entry in entries_in_group:
+            if id_value == entry['id']:
+                raise err.DoubleID
+            entry_ids.append(entry['id'])
+        
+        if id_value == 'AUTO':
+            if entry_ids == []:
+                id_value = 1
+            else:
+                id_value = int(max(entry_ids)) + 1
+
+        # checks data types
+        data_types = ['int', 'float', 'string', 'bool', 'date', 'text']
+
+        if value == '':
+            pass
+        else:
+            try:
+                if data_type == data_types[0]:      # int
+                    value = int(value)
+                elif data_type == data_types[1]:    # float
+                    value = float(value)
+                elif data_type == data_types[2]:    # string
+                    value = str(value)
+                elif data_type == data_types[3]:    # bool
+                    if value.lower() != 'true' and value.lower() != 'false' and value != '0' and value != '1':
+                        raise err.DBValueError
+                    value = bool(value.lower())
+                elif data_type == data_types[4]:    # date
+                    if not re.search('^(\d)(\d)/(\d)(\d)/(\d)(\d)(\d)(\d)$', str(value)):
+                        raise err.DBValueError
+                elif data_type == data_types[5]:    # text
+                    if not value.isalpha():
+                        raise err.DBValueError
+            except ValueError:
+                raise err.DBValueError
+
+        entry = f'ENTRY[id="{id_value}", name="{name}", group="{group}", type="{data_type}", value="{value}"]'
+
+        # check where to add the entry
+        # TODO: remove unnecessary blank lines
+        script = self.int_.script_lines
+
+        if re.search(r'^ENTRY\[id="(\d+)", name="(.+?)", group="(.+?)", type="(.*?)", value="(.*?)"]$', script[len(script) - 1]):
+
+            script.append(entry)
+
+            with open(self.int_.db, 'w') as add_entry_f:
+                for line in script:
+                    add_entry_f.write(line + '\n')
+
+        else:
+            script.append('')
+            script.append(entry)
+
+            with open(self.int_.db, 'w') as add_entry_f:
+                for line in script:
+                    add_entry_f.write(line + '\n')
 
     def remove_entry(self, entry: str):
         pass
