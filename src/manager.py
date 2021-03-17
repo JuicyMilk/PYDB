@@ -148,7 +148,7 @@ class Manager:
         entry = f'ENTRY[id="{id_value}", name="{name}", group="{group}", type="{data_type}", value="{value}"]'
 
         # check where to add the entry
-        # TODO: remove unnecessary blank lines
+        # TODO: remove unnecessary blank lines in db file
         script = self.int_.script_lines
 
         if re.search(r'^ENTRY\[id="(\d+)", name="(.+?)", group="(.+?)", type="(.*?)", value="(.*?)"]$', script[len(script) - 1]):
