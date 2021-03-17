@@ -46,8 +46,12 @@ class EntryAlreadyExists(Error):
 
 class DoubleID(Error):
     def __init__(self):
-        super(DoubleID, self).__init__('There are tow entries with the same ID!')
+        super(DoubleID, self).__init__('The entered ID is already in use.')
 
 class DBNameEmpty(Error):
     def __init__(self):
         super(DoubleID, self).__init__('Database without DB_NAME cannot be created!')
+
+class DBValueError(Error):
+    def __init__(self):
+        super(DBValueError, self).__init__('The "value" type is not the same as "data_type".')
