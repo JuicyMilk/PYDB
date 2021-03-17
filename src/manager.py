@@ -89,7 +89,7 @@ class Manager:
                 script.remove(line)
                 script.insert(group_indx, f'GROUP[name="{new_group_name}"]')
 
-            # TODO: make re.search safe, so value won't be scanned
+            # FIXME: TODO: make re.search safe, so value won't be scanned
             if re.search(r'ENTRY\[id="(\d)", name="(.?)", group="' + group + r'"', line):
                 entry_indx = script.index(line)
 
