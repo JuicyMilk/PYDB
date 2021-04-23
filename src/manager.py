@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 from interpreter import Interpreter as Int
 import errors as err
@@ -59,21 +60,32 @@ class Manager:
         """removes group from db with all its entries"""
         entries_in_group = self.int_.get_entries_in_group(group)
         script = self.int_.script_lines
+        entries_in_group_r = []
+        script_ = []
 
         for line in script:
             if line == f'GROUP[name="{group}"]':
-                script.remove(line)
+                script.pop(script.index(line))
 
         for line in script:
-            if 'ENTRY[id=' in line and f'group="{group}"' in line:
-                script.remove(line)
+            if re.search(r'^ENTRY\[id="(\d+)", name="(.+?)", group="%s", type="(.*?)", value="(.*?)"]$' % group, line):
+                entries_in_group_r.append(line)
 
-        if script[-1] == '':
-            del script[-1]
+        for line in script:
+            if line not in entries_in_group_r:
+                script_.append(line)
 
-        with open(self.db, 'w') as group_rm:
-            for line in script:
-                group_rm.write(line + '\n')
+        i = 0
+        while i < len(script_) or script[-1].isspace():
+            i += 1
+            if script_[-1] == '':
+                del script_[-1]
+
+        with open(self.int_.db, 'w') as rm_entry:
+            for line in script_:
+                rm_entry.write(line + '\n')
+
+        print(script_)
 
     def edit_group(self, group: str, new_group_name: str):
         """changes group name"""
@@ -122,6 +134,7 @@ class Manager:
         # checks data types
         data_types = ['int', 'float', 'string', 'bool', 'date', 'text']
 
+        # FIXME: if data_type == '', value could be set
         if value == '':
             pass
         else:
@@ -151,24 +164,56 @@ class Manager:
         # TODO: remove unnecessary blank lines in db file
         script = self.int_.script_lines
 
-        if re.search(r'^ENTRY\[id="(\d+)", name="(.+?)", group="(.+?)", type="(.*?)", value="(.*?)"]$', script[len(script) - 1]):
+        r_groups = re.compile(r'^GROUP\[name="(.*?)"]$')
+        r_entries = re.compile(r'^ENTRY\[id="(\d+)", name="(.+?)", group="(.+?)", type="(.*?)", value="(.*?)"]$')
 
-            script.append(entry)
-
-            with open(self.int_.db, 'w') as add_entry_f:
-                for line in script:
-                    add_entry_f.write(line + '\n')
-
+        groups = list(filter(r_groups.match, script))
+        entries = list(filter(r_entries.match, script))
+        
+        if entries == []:
+            last_group_index = script.index(groups[-1])
+            
+            script.insert(last_group_index + 1, '')
+            script.insert(last_group_index + 2, entry)
         else:
-            script.append('')
-            script.append(entry)
+            last_entry_index = script.index(entries[-1])
 
-            with open(self.int_.db, 'w') as add_entry_f:
+            script.insert(last_entry_index + 1, entry)
+
+        print(script)
+        i = 0
+        while i < len(script):
+            i += 1
+            if script[-1] == '' or script[-1].isspace():
+                print('as')
+                del script[-1]
+
+        with open(self.int_.db, 'w') as add_entry_f:
+            for line in script:
+                add_entry_f.write(line + '\n')
+
+    def remove_entry(self, id: int, group: str):
+        """removes entry from db"""
+        entries_in_group = self.int_.get_entries_in_group(group)
+        script = self.int_.script_lines
+
+        for entry in entries_in_group:
+            if entry["id"] == id and entry["group"] == group:
                 for line in script:
-                    add_entry_f.write(line + '\n')
+                    if line == f'ENTRY[id="{entry["id"]}", name="{entry["name"]}", group="{entry["group"]}", type="{entry["type"]}", value="{entry["value"]}"]':
+                        script.remove(line)
 
-    def remove_entry(self, entry: str):
-        pass
+                        if script[-1] == '':
+                            del script[-1]
+
+                        with open(self.db, 'w') as entry_rm:
+                            for line in script:
+                                entry_rm.write(line + '\n')
+                
+                return 0
+        
+        raise err.EntryNotFound
+        
 
     def edit_entry(self, entry: str):
         pass
