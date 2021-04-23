@@ -11,6 +11,11 @@ from interpreter import Interpreter as Int
 import errors as err
 import colors as clr
 
+# clr.Fore colors
+L_B = clr.Fore.LIGHT_BLUE
+W = clr.Fore.WHITE
+Y = clr.Fore.YELLOW
+
 start_menu_help_text = \
 """
 ----------------------------------------------------
@@ -33,31 +38,38 @@ f"""
 {clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
 {clr.Fore.PURPLE}basic commands{clr.Fore.WHITE}
 {clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
-help                shows this help
-quit/exit           quits the program
-clear               clears the terminal
-back                get back to start menu
-reload              reloads config.json // not working at the moment
+{L_B}help{W}                shows this help
+{L_B}quit/exit{W}           quits the program
+{L_B}clear{W}               clears the terminal
+{L_B}back{W}                get back to start menu
+{L_B}reload{W}              reloads config.json // not working at the moment
 
-{clr.Fore.DARK_GREY}============={clr.Fore.WHITE}
-{clr.Fore.PURPLE}list commands{clr.Fore.WHITE}
-{clr.Fore.DARK_GREY}============={clr.Fore.WHITE}
-lsg                 lists all groups in database
-lsea                lists all entries in all groups
-lse [group_name]    lists all entries in the specified group
+{clr.Fore.DARK_GREY}============={W}
+{clr.Fore.PURPLE}list commands{W}
+{clr.Fore.DARK_GREY}============={W}
+{L_B}lsg{clr.Fore.WHITE}                 lists all groups in database
+{L_B}lsea{clr.Fore.WHITE}                lists all entries in all groups
+{L_B}lse{clr.Fore.WHITE} [group_name]    lists all entries in the specified group
 
-{clr.Fore.DARK_GREY}============{clr.Fore.WHITE}
-{clr.Fore.PURPLE}add commands{clr.Fore.WHITE}
-{clr.Fore.DARK_GREY}============{clr.Fore.WHITE}
-add <arg 1> <arg 2>:
-    <arg 1>: required; either "group" or "entry"
-    <arg 2>: required; a name for either the group or the entry
+{clr.Fore.DARK_GREY}============{W}
+{clr.Fore.PURPLE}add commands{W}
+{clr.Fore.DARK_GREY}============{W}
+{L_B}add{W} {Y}<arg 1> <arg 2> [<arg 3>] {W}:
+        {Y}<arg 1>{W}: required; either "group" or "entry"
+        {Y}<arg 2>{W}: required; a name for either the group or the entry
+            {Y}<arg 3>{W}: entry information: e.g. (id=AUTO;name="EntryOne";group="GroupOne";data_type="int";value="1")
+                id (req):       either an integer or AUTO
+                name (req):     string
+                group (req):    string
+                data_type:      [int, float, string, bool, date, text]; if empty, "value" cannot have a value
+                value:          same type as data_type
 
-{clr.Fore.DARK_GREY}==============={clr.Fore.WHITE}
-{clr.Fore.PURPLE}remove commands{clr.Fore.WHITE}
-{clr.Fore.DARK_GREY}==============={clr.Fore.WHITE}
-rm <arg 1>:
-    <arg 1>: required; either "group" or "entry"
+{clr.Fore.DARK_GREY}==============={W}
+{clr.Fore.PURPLE}remove commands{W}
+{clr.Fore.DARK_GREY}==============={W}
+{L_B}rm{W} {Y}<arg 1>{W} {Y}<arg 2>{W}:
+        {Y}<arg 1>{W}: required; either "group" or "entry"
+        {Y}<arg 2>{W}: required; name of the group or entry's id and group
 
 ----------------------------------------------------
 """
@@ -310,7 +322,7 @@ def main():
         start_menu()
 
         while True:
-            cmd = input(f'({clr.Fore.RED}{int_.db_name}{clr.Fore.WHITE})>> ')
+            cmd = input(f'({clr.Fore.LIGHT_RED}{int_.db_name}{clr.Fore.WHITE})>> ')
             # _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
             _cmd = shlex.split(cmd)
             if '' in _cmd:
@@ -483,6 +495,36 @@ def main():
                             continue
                     else:
                         print('Abort removing process. Group didn\'t get removed')
+                elif _cmd[1] == 'entry':
+                    if len(_cmd) < 3:
+                        print(clr.Fore.LIGHT_RED + 'You need to specify the entry you want to delete' + clr.Fore.WHITE)
+                        continue
+                    elif len(_cmd) > 3:
+                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        continue
+
+                    if re.search(r'\(id="(\d*)";group="(.*?)"\)', cmd_str):
+                        entry_values = re.findall(r'\(id="(\d*)";group="(.*?)"\)', cmd_str)
+
+                        id = entry_values[0][0]
+                        group = entry_values[0][1]
+
+                        if id == '':
+                            print(clr.Fore.LIGHT_RED + '"id" cannot be empty' + clr.Fore.WHITE)
+                            continue
+                        if group == '':
+                            print(clr.Fore.LIGHT_RED + '"group" cannot be empty' + clr.Fore.WHITE)
+                            continue
+
+                        try:
+                            mgr.remove_entry(id, group)
+                        except (err.GroupNotFound, err.EntryNotFound) as e:
+                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    else:
+                        print(clr.Fore.LIGHT_RED + 'Your schema caused an error. Please try again.' + clr.Fore.WHITE)
+                else:
+                    print(clr.Fore.LIGHT_RED + f'"rm {_cmd[1]}" is not a valid command' + clr.Fore.WHITE)
+
             elif _cmd[0] == 'edit':
                 # TODO: edit entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
