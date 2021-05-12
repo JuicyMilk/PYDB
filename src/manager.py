@@ -92,21 +92,49 @@ class Manager:
         entries_in_group = self.int_.get_entries_in_group(group)
         script = self.int_.script_lines
 
+        if new_group_name.isspace() or new_group_name == '':
+            raise err.GroupNameEmpty
+
         if new_group_name in self.int_.db_groups:
             raise err.GroupAlreadyExists
 
         for line in script:
+            # print(line)
+            # print('line end')
             if line == f'GROUP[name="{group}"]':
                 group_indx = script.index(line)
                 script.remove(line)
                 script.insert(group_indx, f'GROUP[name="{new_group_name}"]')
-
-            # FIXME: TODO: make re.search safe, so value won't be scanned
-            if re.search(r'ENTRY\[id="(\d)", name="(.?)", group="' + group + r'"', line):
+            # print(line)
+            # print('line end')
+            if re.search(r'^ENTRY\[id="(\d+)", name="(.+?)", group="%s", type="(.*?)", value="(.*?)"]$' % group, line):
                 entry_indx = script.index(line)
-
+                print(line)
                 script.remove(line)
                 script.insert(entry_indx, line.replace(f'group="{group}"', f'group="{new_group_name}"'))
+
+
+
+        # for line in script:
+        #     if line == f'GROUP[name="{group}"]':
+        #         group_indx = script.index(line)
+        #         script.remove(line)
+        #         script.insert(group_indx, f'GROUP[name="{new_group_name}"]')
+        #         continue
+
+        #     print(line)
+        #     if re.search(r'ENTRY\[id="(.*?)", name="(.*?)", group="' + group + r'"]', line):
+        #         print(line)
+        #         print('line end')
+
+
+            # # FIXME: TODO: make re.search safe, so value won't be scanned
+            # if re.search(r'ENTRY\[id="(\d)", name="(.?)", group="' + group + r'"', line):
+            #     # ENTRY[id="2", name="entryOne", group="1", type="int", value="1234"]
+            #     entry_indx = script.index(line)
+            #     print(line)
+            #     script.remove(line)
+            #     script.insert(entry_indx, line.replace(f'group="{group}"', f'group="{new_group_name}"'))
             
         with open(self.db, 'w') as group_edit:
             for line in script:
@@ -194,6 +222,7 @@ class Manager:
 
     def remove_entry(self, id: int, group: str):
         """removes entry from db"""
+        # FIXME: check if group exists
         entries_in_group = self.int_.get_entries_in_group(group)
         script = self.int_.script_lines
 
@@ -215,5 +244,74 @@ class Manager:
         raise err.EntryNotFound
         
 
-    def edit_entry(self, entry: str):
-        pass
+    def edit_entry(self, id: int, group: str, attributes: dict):
+        """edit entry attributes"""
+        entries_in_group = self.int_.get_entries_in_group(group)
+
+        self.int_.get_groups()
+        if group not in self.int_.db_groups:
+            raise err.GroupNotFound
+
+        entries_in_group = self.int_.get_entries_in_group(group)
+        script = self.int_.script_lines
+
+        for entry in entries_in_group:
+            if entry['id'] == str(id):
+                if 'id' in attributes:
+                    raise err.EntryIDchange
+
+# r_entries = re.compile(r'^ENTRY\[id="(\d+)", name="(.+?)", group="(.+?)", type="(.*?)", value="(.*?)"]$')
+                for line in script:
+                    if re.search(r'^ENTRY\[id="%s", name="(.*?)", group="%s", type="(.*?)", value="(.*?)"]$' % (id, group), line):
+                        line_original = line
+                        line_edit = line
+                        for key in attributes:
+                            if key == 'name':
+                                r_entry_name = re.compile(r'name="(.*?)"')
+                                line_edit = re.sub(r_entry_name, 'name="%s"' % attributes['name'], line_edit)
+                            elif key == 'group':
+                                if not attributes['group'] in self.int_.db_groups:
+                                    raise err.GroupNotFound
+
+                                # check id first
+                                entry_ids = []
+                                for entry in self.int_.get_entries_in_group(attributes['group']):
+                                    entry_ids.append(entry['id'])
+                                
+                                if entry_ids == []:
+                                    entry_ids.append('0')
+
+                                for e_id in entry_ids:
+                                    e_id = int(max(entry_ids)) + 1
+                                    id = e_id
+
+                                script = self.int_.script_lines # reloads script, because any self.int_ function clears it for some reason
+
+                                r_entry_group = re.compile(r'group="(.*?)"')
+                                r_entry_id = re.compile(r'id="(.*?)"')
+                                line_edit = re.sub(r_entry_group, 'group="%s"' % attributes['group'], line_edit)
+                                line_edit = re.sub(r_entry_id, 'id="%s"' % id, line_edit)
+                            elif key == 'type':
+                                # TODO: set value to NULL
+                                r_entry_type = re.compile(r'type="(.*?)"')
+                                line_edit = re.sub(r_entry_type, 'type="%s"' % attributes['type'], line_edit)
+                            elif key == 'value':
+                                # TODO: check if value is the right datatype
+                                r_entry_value = re.compile(r'value="(.*?)"')
+                                line_edit = re.sub(r_entry_value, 'value="%s"' % attributes['value'], line_edit)
+                            else:
+                                raise err.EntryAttributeNotFound
+
+                        old_entry_index = script.index(line_original)
+                        script.remove(line_original)
+                        script.insert(old_entry_index, line_edit)
+
+                        if script[-1] == '':
+                            del script[-1]
+
+                        with open(self.db, 'w') as entry_edit:
+                            for line in script:
+                                entry_edit.write(line + '\n')
+                return 0
+        
+        raise err.EntryNotFound
