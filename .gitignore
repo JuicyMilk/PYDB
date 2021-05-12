@@ -7,3 +7,9 @@ src/__pycache__/
 
 # old_code.txt
 src/old_code.txt
+
+# test.py file
+src/test.py
+
+# ../.vscode
+.vscode/
