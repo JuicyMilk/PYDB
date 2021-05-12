@@ -55,3 +55,15 @@ class DBNameEmpty(Error):
 class DBValueError(Error):
     def __init__(self):
         super(DBValueError, self).__init__('The "value" type is not the same as "data_type".')
+
+class GroupNameEmpty(Error):
+    def __init__(self):
+        super(DBValueError, self).__init__('The group name cannot be empty!')
+
+class EntryIDchange(Error):
+    def __init__(self):
+        super(EntryIDchange, self).__init__('ID cannot be changed')
+
+class EntryAttributeNotFound(Error):
+    def __init__(self):
+        super(EntryAttributeNotFound, self).__init__('The attribute you want to change does not exist')
