@@ -12,6 +12,7 @@ import errors as err
 import colors as clr
 
 # clr.Fore colors
+L_R = clr.Fore.LIGHT_RED
 L_B = clr.Fore.LIGHT_BLUE
 W = clr.Fore.WHITE
 Y = clr.Fore.YELLOW
@@ -35,9 +36,9 @@ help_text = \
 f"""
 ----------------------------------------------------
 
-{clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
-{clr.Fore.PURPLE}basic commands{clr.Fore.WHITE}
-{clr.Fore.DARK_GREY}=============={clr.Fore.WHITE}
+{clr.Fore.DARK_GREY}=============={W}
+{clr.Fore.PURPLE}basic commands{W}
+{clr.Fore.DARK_GREY}=============={W}
 {L_B}help{W}                shows this help
 {L_B}quit/exit{W}           quits the program
 {L_B}clear{W}               clears the terminal
@@ -47,9 +48,9 @@ f"""
 {clr.Fore.DARK_GREY}============={W}
 {clr.Fore.PURPLE}list commands{W}
 {clr.Fore.DARK_GREY}============={W}
-{L_B}lsg{clr.Fore.WHITE}                 lists all groups in database
-{L_B}lsea{clr.Fore.WHITE}                lists all entries in all groups
-{L_B}lse{clr.Fore.WHITE} [group_name]    lists all entries in the specified group
+{L_B}lsg{W}                 lists all groups in database
+{L_B}lsea{W}                lists all entries in all groups
+{L_B}lse{W} [group_name]    lists all entries in the specified group
 
 {clr.Fore.DARK_GREY}============{W}
 {clr.Fore.PURPLE}add commands{W}
@@ -71,6 +72,12 @@ f"""
         {Y}<arg 1>{W}: required; either "group" or "entry"
         {Y}<arg 2>{W}: required; name of the group or entry's id and group
 
+{clr.Fore.DARK_GREY}==============={W}
+{clr.Fore.PURPLE}remove commands{W}
+{clr.Fore.DARK_GREY}==============={W}
+{L_B}edit{W} {Y}<arg 1>{W} {Y}<arg 2>{W}:
+        {Y}<arg 1>{W}: required; either "group" or "entry"
+        {Y}<arg 2>{W}: required; name of the group or entry's id and group in the "(id, group)" format
 ----------------------------------------------------
 """
 
@@ -107,10 +114,10 @@ def load_config():
         if 'standard_db_path' in cfg and not cfg['standard_db_path'].isspace() and cfg['standard_db_path'] != '':
             # checks if standard_db_path exists and is a path
             if not os.path.exists(cfg['standard_db_path']):
-                print(clr.Fore.LIGHT_RED + 'The provided path wasn\'t found!\nChange your "config.json" file' + clr.Fore.WHITE)
+                print(L_R + 'The provided path wasn\'t found!\nChange your "config.json" file' + W)
                 exit(0)
             if os.path.isfile(cfg['standard_db_path']):
-                print(clr.Fore.LIGHT_RED + 'The provided path can\'t be a file!\nChange your "config.json" file' + clr.Fore.WHITE)
+                print(L_R + 'The provided path can\'t be a file!\nChange your "config.json" file' + W)
                 exit(0)
 
             standard_db_path = cfg['standard_db_path']
@@ -123,10 +130,10 @@ def load_config():
             if not standard_db_path.endswith('/'):
                 standard_db_path += '/'             # adds a / if there is no at the end ot the standard_db_path
     except FileNotFoundError:
-        print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + clr.Fore.WHITE)
+        print(clr.Fore.YELLOW + '[i] You don\'t have a "config.json" file, using standard settings' + W)
         pass
 
-    print(clr.Fore.YELLOW + '[i] If you change config.json you have to restart the application manually' + clr.Fore.WHITE)
+    print(clr.Fore.YELLOW + '[i] If you change config.json you have to restart the application manually' + W)
 
 def quit():
     """quits the application"""
@@ -177,7 +184,7 @@ def start_menu():
             if _cmd == []:
                 continue
         except ValueError:
-            print(clr.Fore.LIGHT_RED + 'You need to add closing quotes!' + clr.Fore.WHITE)
+            print(L_R + 'You need to add closing quotes!' + W)
             continue
             
         if _cmd[0] == 'help':
@@ -191,13 +198,13 @@ def start_menu():
                 os.system('clear')
         elif _cmd[0] == 'reload':
             # reload()
-            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
+            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + W)
         elif _cmd[0] == 'restart':
             # restart()
-            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
+            print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + W)
         elif _cmd[0] == 'ch':
             if len(_cmd) == 1 and _cmd[0] == 'ch' and not use_standard_db_path:
-                print(clr.Fore.YELLOW + 'You set "use_standard_db_path" to false in you config.json. Type in a path or change it and then type in "reload"' + clr.Fore.WHITE)
+                print(clr.Fore.YELLOW + 'You set "use_standard_db_path" to false in you config.json. Type in a path or change it and then type in "reload"' + W)
                 continue
             if len(_cmd) == 1 and _cmd[0] == 'ch' and use_standard_db_path:           # if standard_db_path is set in config.json and use_standard_db_path = True,
                 files_in_std_dir = os.listdir(standard_db_path)                         # this will let the user choose a .pydb file from that directory
@@ -210,15 +217,15 @@ def start_menu():
                         if i.endswith('.pydb'):
                             databases_counter += 1
                             databases.append([databases_counter, standard_db_path + i])
-                            print(clr.Fore.PURPLE + f'[{databases_counter}] ' + clr.Fore.WHITE + i)
+                            print(clr.Fore.PURPLE + f'[{databases_counter}] ' + W + i)
 
                 if databases_counter == 0:
-                    print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + clr.Fore.WHITE)
+                    print(clr.Fore.YELLOW + '[i] There is no ".pydb" file in the given directory' + W)
                     print('')
                     # use_standard_db_path = False
                     continue
 
-                print(f'\n{clr.Fore.LIGHT_RED}[q]{clr.Fore.WHITE} quit\n')
+                print(f'\n{L_R}[q]{W} quit\n')
 
                 while True:
                     # lets the user choose from the list
@@ -229,11 +236,11 @@ def start_menu():
                         else:
                             db_num = int(select_i)
                     except ValueError:
-                        print(clr.Fore.LIGHT_RED + 'The input needs to be a non decimal number!' + clr.Fore.WHITE)
+                        print(L_R + 'The input needs to be a non decimal number!' + W)
                         continue
 
                     if db_num < 1 or db_num > databases_counter:
-                        print(clr.Fore.LIGHT_RED + 'The number you typed in is out of range!' + clr.Fore.WHITE)
+                        print(L_R + 'The number you typed in is out of range!' + W)
                         start_menu()
 
                     for db in databases:
@@ -267,18 +274,18 @@ def start_menu():
                     mgr = Mgr(_cmd[1])
                     break
                 except err.FileNotDB as e:
-                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    print(L_R + str(e) + W)
                 except err.DatabaseNotFound as e:
-                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    print(L_R + str(e) + W)
             elif _cmd[0] == 'ch':
                 if len(_cmd) > 2:
-                    print(clr.Fore.LIGHT_RED + 'That are too many arguments!' + clr.Fore.WHITE)
+                    print(L_R + 'That are too many arguments!' + W)
 
                 if len(_cmd) == 2 and _cmd[1] == '' or _cmd[1].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You have to provide a database file!' + clr.Fore.WHITE)
+                    print(L_R + 'You have to provide a database file!' + W)
         elif _cmd[0] == 'create':
             if len(_cmd) < 3 or _cmd[1] == '' or _cmd[2] == ''  or _cmd[1].isspace() or _cmd[2].isspace():
-                print(clr.Fore.LIGHT_RED + 'You have to provide a file name or path and a DB_NAME!' + clr.Fore.WHITE)
+                print(L_R + 'You have to provide a file name or path and a DB_NAME!' + W)
                 continue
             
             db_file = _cmd[1]
@@ -290,10 +297,10 @@ def start_menu():
                 mgr_ = Mgr(db_file)
                 mgr_.create_db(_cmd[2])
             except err.DatabaseAlreadyExists as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                print(L_R + str(e) + W)
                 continue
             except err.FileNotDB as e:
-                print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                print(L_R + str(e) + W)
                 continue
 
             int_ = Int(db_file)
@@ -305,7 +312,7 @@ def start_menu():
             mgr = Mgr(_cmd[1])
             break
         else:
-            print(f'{clr.Fore.LIGHT_RED}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
+            print(f'{L_R}"{_cmd[0]}" is an unknown command, type "help" to see a list of all available commands{W}')
 
 # TODO: rework back method and start menu
 def main():
@@ -322,7 +329,7 @@ def main():
         start_menu()
 
         while True:
-            cmd = input(f'({clr.Fore.LIGHT_RED}{int_.db_name}{clr.Fore.WHITE})>> ')
+            cmd = input(f'({L_R}{int_.db_name}{W})>> ')
             # _cmd = re.split(r'\s+(?=[^"]*(?:\(|$))', cmd)
             _cmd = shlex.split(cmd)
             if '' in _cmd:
@@ -349,10 +356,10 @@ def main():
                     os.system('clear')
             elif _cmd[0] == 'reload':
                 # reload()
-                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
+                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + W)
             elif _cmd[0] == 'restart':
                 # restart()
-                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + clr.Fore.WHITE)
+                print(clr.Fore.YELLOW + 'not available at the moment, please restart manually' + W)
             elif _cmd[0] == 'lsg':
                 """lists all groups in DB"""
                 int_.get_groups()
@@ -361,9 +368,9 @@ def main():
                     print('There are no groups in this database')
                     continue
 
-                print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{clr.Fore.WHITE}" -----')
+                print('\n' + f'----- Groups in "{clr.Fore.PURPLE}{int_.db_name}{W}" -----')
                 for group in int_.db_groups:
-                    print(clr.Fore.ORANGE + group + clr.Fore.WHITE)
+                    print(clr.Fore.ORANGE + group + W)
 
                 print('-' * len(f'----- Groups in "{int_.db_name}" -----') + '\n')
             elif _cmd[0] == 'lsea':
@@ -374,14 +381,14 @@ def main():
                     continue
 
                 print('')
-                print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
+                print(f'{clr.Fore.CYAN}ID\t{clr.Fore.ORANGE}Group\t\t{clr.Fore.LIGHT_GREEN}Name\n{W}')
                 for entry in int_.db_entries:
-                    print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + clr.Fore.WHITE)
+                    print(clr.Fore.CYAN + entry['id'] + '\t' + clr.Fore.ORANGE + entry['group'] + '\t\t' + clr.Fore.LIGHT_GREEN + entry['name'] + W)
                 print('')
             elif _cmd[0] == 'lse':
                 """lists all entries in specified group"""
                 if len(cmd) < 2:
-                    print(clr.Fore.LIGHT_RED + 'You need to specify a group!' + clr.Fore.WHITE)
+                    print(L_R + 'You need to specify a group!' + W)
                     continue
 
                 try:
@@ -391,33 +398,33 @@ def main():
                         entries_in_group = int_.get_entries_in_group(cmd[1])
 
                     if entries_in_group == []:
-                        print(clr.Fore.YELLOW + 'There are no entries in the specified group' + clr.Fore.WHITE)
+                        print(clr.Fore.YELLOW + 'There are no entries in the specified group' + W)
                         continue
 
-                    print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{clr.Fore.WHITE}')
+                    print(f'{clr.Fore.CYAN}ID\t{clr.Fore.LIGHT_GREEN}Name\n{W}')
                     for entry in entries_in_group:
-                        print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + clr.Fore.WHITE)
+                        print(clr.Fore.CYAN + entry['id'] + '\t' + entry['name'] + W)
                 except err.GroupNotFound as e:
-                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    print(L_R + str(e) + W)
             elif _cmd[0] == 'add':
                 """adds group or entry"""
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to add\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                    print(L_R + 'You need to specify what you want to add\nType "help" to see a list of all available commands' + W)
                     continue
                 
                 # adds group
                 if _cmd[1] == 'group':
                     if len(_cmd) < 3:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify a name for the group' + clr.Fore.WHITE)
+                        print(L_R + 'You need to specify a name for the group' + W)
                         continue
                     elif len(_cmd) > 3:
-                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        print(L_R + '2 arguments excpected; got ' + str(len(_cmd) - 1) + W)
                         continue
 
                     try:
                         mgr.add_group(_cmd[2])
                     except err.GroupAlreadyExists as e:
-                        print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                        print(L_R + str(e) + W)
                         continue
 
                     print('Added group')
@@ -425,7 +432,7 @@ def main():
                 # adds entry
                 elif _cmd[1] == 'entry':
                     if len(_cmd) < 3:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify an entry schema' + clr.Fore.WHITE)
+                        print(L_R + 'You need to specify an entry schema' + W)
                         continue
 
                     if re.search(r'\(id=(.*?);name="(.*?)";group="(.*?)";data_type="(.*?)";value="(.*?)"\)', cmd_str):
@@ -441,46 +448,46 @@ def main():
                             int(id)
                         except ValueError:
                             if id == '':
-                                print(clr.Fore.LIGHT_RED + '"id" cannot be empty, it needs to be either set to an integer or to "AUTO"' + clr.Fore.WHITE)
+                                print(L_R + '"id" cannot be empty, it needs to be either set to an integer or to "AUTO"' + W)
                                 continue
                             elif id != 'AUTO':
-                                print(clr.Fore.LIGHT_RED + '"id" needs to be an integer or set to "AUTO" (without quotes)' + clr.Fore.WHITE)
+                                print(L_R + '"id" needs to be an integer or set to "AUTO" (without quotes)' + W)
                                 continue
 
                         if name == '':
-                            print(clr.Fore.LIGHT_RED + '"name" cannot be empty' + clr.Fore.WHITE)
+                            print(L_R + '"name" cannot be empty' + W)
                             continue
                         if group == '':
-                            print(clr.Fore.LIGHT_RED + '"group" cannot be empty' + clr.Fore.WHITE)
+                            print(L_R + '"group" cannot be empty' + W)
                             continue
                         
                         try:
                             mgr.add_entry(name, group, data_type, value, id)
                         except (err.DoubleID, err.GroupNotFound, err.DBValueError) as e:
-                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                            print(L_R + str(e) + W)
 
                     else:
-                        print(clr.Fore.LIGHT_RED + 'Your schema caused an error. Please try again.' + clr.Fore.WHITE)
+                        print(L_R + 'Your schema caused an error. Please try again.' + W)
 
             elif _cmd[0] == 'rm':
                 """removes group or entry"""
                 # TODO: rm entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to delete\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                    print(L_R + 'You need to specify what you want to delete\nType "help" to see a list of all available commands' + W)
                     continue
 
                 # removes group
                 if _cmd[1] == 'group':
                     if len(_cmd) < 3:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify the name of the group' + clr.Fore.WHITE)
+                        print(L_R + 'You need to specify the name of the group' + W)
                         continue
                     elif len(_cmd) > 3:
-                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        print(L_R + '2 arguments excpected; got ' + str(len(_cmd) - 1) + W)
                         continue
 
                     int_.get_groups()
                     if _cmd[2] not in int_.db_groups:
-                        print(clr.Fore.LIGHT_RED + 'The specified group could not be found!' + clr.Fore.WHITE)
+                        print(L_R + 'The specified group could not be found!' + W)
                         continue
 
                     confirmation = input('Are you sure about deleting the group "' + _cmd[2] + '"? All entries within this group will be remove as well.\n[y/n] ')
@@ -491,16 +498,16 @@ def main():
                         try:
                             mgr.remove_group(_cmd[2])
                         except err.GroupNotFound as e:
-                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                            print(L_R + str(e) + W)
                             continue
                     else:
                         print('Abort removing process. Group didn\'t get removed')
                 elif _cmd[1] == 'entry':
                     if len(_cmd) < 3:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify the entry you want to delete' + clr.Fore.WHITE)
+                        print(L_R + 'You need to specify the entry you want to delete' + W)
                         continue
                     elif len(_cmd) > 3:
-                        print(clr.Fore.LIGHT_RED + '2 arguments excpected; got ' + str(len(_cmd) - 1) + clr.Fore.WHITE)
+                        print(L_R + '2 arguments excpected; got ' + str(len(_cmd) - 1) + W)
                         continue
 
                     if re.search(r'\(id="(\d*)";group="(.*?)"\)', cmd_str):
@@ -510,43 +517,50 @@ def main():
                         group = entry_values[0][1]
 
                         if id == '':
-                            print(clr.Fore.LIGHT_RED + '"id" cannot be empty' + clr.Fore.WHITE)
+                            print(L_R + '"id" cannot be empty' + W)
                             continue
                         if group == '':
-                            print(clr.Fore.LIGHT_RED + '"group" cannot be empty' + clr.Fore.WHITE)
+                            print(L_R + '"group" cannot be empty' + W)
                             continue
 
                         try:
                             mgr.remove_entry(id, group)
                         except (err.GroupNotFound, err.EntryNotFound) as e:
-                            print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                            print(L_R + str(e) + W)
                     else:
-                        print(clr.Fore.LIGHT_RED + 'Your schema caused an error. Please try again.' + clr.Fore.WHITE)
+                        print(L_R + 'Your schema caused an error. Please try again.' + W)
                 else:
-                    print(clr.Fore.LIGHT_RED + f'"rm {_cmd[1]}" is not a valid command' + clr.Fore.WHITE)
+                    print(L_R + f'"rm {_cmd[1]}" is not a valid command' + W)
 
             elif _cmd[0] == 'edit':
                 # TODO: edit entry
                 if len(_cmd) < 2 or _cmd[1] == '' or _cmd[1].isspace():
-                    print(clr.Fore.LIGHT_RED + 'You need to specify what you want to edit\nType "help" to see a list of all available commands' + clr.Fore.WHITE)
+                    print(L_R + 'You need to specify what you want to edit\nType "help" to see a list of all available commands' + W)
                     continue
 
                 # changes group name
                 if _cmd[1] == 'group':
                     if len(_cmd) < 3:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify the name of the group' + clr.Fore.WHITE)
+                        print(L_R + 'You need to specify the name of the group' + W)
                         continue
-                    if len(_cmd) < 4:
-                        print(clr.Fore.LIGHT_RED + 'You need to specify a new name for the group' + clr.Fore.WHITE)
+                    if len(_cmd) > 4:
+                        print(L_R + '2 arguments excpected; got ' + str(len(_cmd) - 1) + W)
                         continue
 
-                try:
-                    mgr.edit_group(_cmd[2], _cmd[3])
-                    print('Successfully updated group')
-                except (err.GroupAlreadyExists, err.GroupNotFound) as e:
-                    print(clr.Fore.LIGHT_RED + str(e) + clr.Fore.WHITE)
+                    int_.get_groups()
+                    if _cmd[2] not in int_.db_groups:
+                        print(L_R + 'The specified group could not be found!' + W)
+                        continue
+
+                    new_name = input('new group name: ')
+
+                    try:
+                        mgr.edit_group(_cmd[2], new_name)
+                        print('Successfully updated group')
+                    except (err.GroupAlreadyExists, err.GroupNameEmpty) as e:
+                        print(L_R + str(e) + W)
             else:
-                print(f'{clr.Fore.LIGHT_RED}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{clr.Fore.WHITE}')
+                print(f'{L_R}"{cmd[0]}" is an unknown command, type "help" to see a list of all available commands{W}')
     except KeyboardInterrupt:
         quit()
 
